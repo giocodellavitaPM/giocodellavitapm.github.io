@@ -201,6 +201,12 @@ rep("function drawPalazzo(a){",P('palazzi9.js')+"function drawPalazzo(a){")
 rep("function drawPalazzo(a){",P('inizio9.js')+"function drawPalazzo(a){")
 rep("<title>Gioco della Vita</title>",'<title>Gioco della Vita PM</title><meta name="description" content="Gioco della Vita PM: nasci, cresci, vai a scuola, lavora e vivi tutta la tua vita in una città enorme in 3D. Gioco gratis per bambini e ragazzi, da computer e telefono."><meta name="keywords" content="gioco della vita PM, gioco della vita, gioco vita città 3D, simulatore di vita"><meta property="og:title" content="Gioco della Vita PM"><meta property="og:description" content="Nasci, cresci e vivi tutta la tua vita in una città 3D."><meta name="theme-color" content="#07110c">')
 rep("function drawPalazzo(a){",P('dev9.js')+P('acc9.js')+P('online9.js')+P('novita9.js')+"function drawPalazzo(a){")
+# v84: moto sulla strada, anello con le curve intorno alla città, lavoro da tassista
+rep("function drawPalazzo(a){",P('moto9.js')+P('anello9.js')+P('tassi9.js')+"function drawPalazzo(a){")
+rep("const at=(x,y)=>(x<0||y<0||x>=W||y>=H)?5:map[y*W+x];","const at=(x,y)=>(x<0||y<0||x>=W||y>=H)?out9(x,y):map[y*W+x];")
+rep("if(x===0||y===0||x===W-1||y===H-1)v=5;","if((x===0||y===0||x===W-1||y===H-1)&&v!==1&&v!==2)v=5;")
+rep("cam.x=mw<=VW?(mw-VW)/2:Math.max(0,Math.min(mw-VW,S.pos.x*T-VW/2));","cam.x=mw<=VW?(mw-VW)/2:Math.max(city?-RG9M*T:0,Math.min(mw-VW+(city?RG9M*T:0),S.pos.x*T-VW/2));")
+rep("cam.y=mh+topPad<=VH?(mh-VH)/2-topPad/2:Math.max(-topPad,Math.min(mh-VH+90,S.pos.y*T-VH/2));","cam.y=mh+topPad<=VH?(mh-VH)/2-topPad/2:Math.max(city?-RG9M*T:-topPad,Math.min(mh-VH+90+(city?RG9M*T:0),S.pos.y*T-VH/2));")
 if os.environ.get('INLINE3'):
   rep("<script>",'<script>'+open('lib/three.min.js').read()+'</script>\n<script>')
 else:

@@ -330,7 +330,7 @@ function tdDynamic(scn,dt,city){
   const L=[];
   if(city){TRAF.forEach(c=>{const [x,y]=carXY(c);if(Math.abs(x-S.pos.x)<34&&Math.abs(y-S.pos.y)<34)L.push([x,y,c.o==='h'?(c.d>0?0:Math.PI):(c.d>0?Math.PI/2:-Math.PI/2),c.col,c.stop,0,c.t9||(c.t9=TD_CARTYPES[Math.floor(Math.random()*TD_CARTYPES.length)])])});
     if(!S.carOut&&!S.drive)L.push([DRIVEWAY.x,DRIVEWAY.y,Math.PI/2,famCar().col]);famParked().forEach(q=>L.push([q.x,q.y,Math.PI/2,q.c.col]));
-    if(S.parked&&!S.ride)L.push([S.parked.x,S.parked.y,S.parked.ang,myCarCol(S.parked.id)]);
+    if(S.parked&&!S.ride)L.push([S.parked.x,S.parked.y,S.parked.ang,myCarCol(S.parked.id),0,0,typeof tdTypeOf9==='function'?tdTypeOf9(S.parked.id,0):undefined]);
     if(typeof JK!=='undefined'&&JK.pols)JK.pols.forEach((P,i)=>L.push([P.x,P.y,P.ang,'#f4f6f8',0,0,((TD.time*4|0)+i)%2?'polizia':'polizia2']));if(S.drive)L.push([S.pos.x,S.pos.y,S.drive.ang,famCar().col,0,1]);else if(S.famDrive)L.push([S.pos.x,S.pos.y,S.famDrive.ang,S.famDrive.jack?S.famDrive.jack.col:famCar().col,0,1,S.famDrive.jack&&S.famDrive.jack.t9]);else if(inCar)L.push([S.pos.x,S.pos.y,(ui.car||{}).ang||0,myCarCol(bestRide().id),0,1])}
   L.forEach(([x,y,a,col,stop,me,ty],i)=>{const sp=ty||(me?tdMyType():'berlina'),kk=col+sp;let c=TD.cars[i];if(!c||c.col!==kk){if(c)c.g.parent&&c.g.parent.remove(c.g);c=TD.cars[i]={g:tdCar(col,sp),col:kk}}if(c.g.parent!==scn)scn.add(c.g);c.g.position.set(x,0,y);c.g.rotation.y=-a});
   for(let i=L.length;i<TD.cars.length;i++){const c=TD.cars[i];if(c.g.parent)c.g.parent.remove(c.g)}

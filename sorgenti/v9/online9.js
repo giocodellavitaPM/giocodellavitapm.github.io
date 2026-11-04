@@ -15,10 +15,10 @@ async function cl9Push(force,raw,old){const u=OL9.user;if(!u||!OL9.db)return;con
   if(raw===undefined)raw=localStorage.getItem(LS);let s=null;try{s=JSON.parse(raw||'null')}catch(e){}
   const F=firebase.firestore.FieldValue,data={nome:cl9Nm(u),email:u.email||'',accesso:((u.providerData||[])[0]||{}).providerId==='google.com'?'Google':'Email',ultimo:F.serverTimestamp(),
     personaggio:s&&s.name?{nome:s.name+' '+(s.surname||''),eta:s.age|0,citta:s.city||'',vivo:!!s.alive,soldi:Math.round((s.money||0)+(s.bank||0)),fa:(()=>{try{return (S&&S.name===s.name)?stageText():''}catch(e){return ''}})()}:null};
-  if(raw&&raw.length<900000)data.salvataggio=raw;if(old===null)data.creato=F.serverTimestamp();
+  if(raw&&raw.length<900000)data.salvataggio=raw;if(old===null)data.creato=F.serverTimestamp();if(OL9.fix)delete data.nome;
   try{await OL9.db.collection('utenti').doc(u.uid).set(data,{merge:true});localStorage.setItem('vita_cl9t_'+u.uid,String(Date.now()))}catch(e){console.warn('cl9 push',e)}}
 // dopo l'accesso: prende la partita online, oppure porta online quella di adesso
-async function cl9After(u){try{localStorage.setItem('vita_cl9','1')}catch(e){}let d;try{const g=await OL9.db.collection('utenti').doc(u.uid).get();d=g.exists?g.data():null}catch(e){d=undefined}
+async function cl9After(u){try{localStorage.setItem('vita_cl9','1')}catch(e){}let d;try{const g=await OL9.db.collection('utenti').doc(u.uid).get();d=g.exists?g.data():null}catch(e){d=undefined}try{if(d&&d.modAdmin&&d.modAdmin.toMillis)localStorage.setItem('vita_cl9m_'+u.uid,String(d.modAdmin.toMillis()));if(d)OL9.fix=!!d.nomeFisso}catch(e){}
   const id=cl9Id(u),o=ACC9.d();ACC9.stash();let a=o.list.find(x=>x.id===id);if(!a){a={id,n:cl9Nm(u),ic:'☁️',t:Date.now(),fb:1};o.list.push(a)}else a.n=cl9Nm(u);
   let raw=(d&&d.salvataggio)||localStorage.getItem('vita_sv9_'+id)||localStorage.getItem(LS)||null;o.cur=id;ACC9.w(o);
   try{if(raw)localStorage.setItem(LS,raw);else localStorage.removeItem(LS)}catch(e){}
@@ -75,3 +75,12 @@ addEventListener('pagehide',()=>{try{if(OL9.user&&S&&!acc9Busy){save();cl9Push(t
 try{if(localStorage.getItem('vita_cl9')==='1'||/apiKey=|mode=/.test(location.search))cl9Load().then(async()=>{const u=OL9.user;if(!u)return;const id=cl9Id(u);if(ACC9.d().cur!==id)return;
   try{const g=await OL9.db.collection('utenti').doc(u.uid).get();const d=g.exists?g.data():null;const loc=+localStorage.getItem('vita_cl9t_'+u.uid)||0,rem=d&&d.ultimo&&d.ultimo.toMillis?d.ultimo.toMillis():0;
     if(d&&d.salvataggio&&rem>loc+8000&&d.salvataggio!==localStorage.getItem(LS)){localStorage.setItem(LS,d.salvataggio);localStorage.setItem('vita_cl9t_'+u.uid,String(rem));toast('☁️ Carico la partita che hai giocato su un altro dispositivo…');acc9Go()}}catch(e){}}).catch(()=>{})}catch(e){}
+
+// modifiche fatte dall'amministratrice nell'app degli account: arrivano subito nella partita (soldi, nome, statistiche)
+function cl9Apply(d,u){try{if(!d)return;OL9.fix=!!d.nomeFisso;if(!d.modifica||!d.modAdmin||!d.modAdmin.toMillis)return;const t=d.modAdmin.toMillis(),k='vita_cl9m_'+u.uid,seen=+localStorage.getItem(k)||0;if(t<=seen)return;
+  if(!S||ACC9.d().cur!==cl9Id(u))return;const m=d.modifica;
+  if(typeof m.money==='number')S.money=Math.round(m.money);if(typeof m.bank==='number'&&S.bank!=null)S.bank=Math.round(m.bank);if(m.name)S.name=String(m.name).slice(0,30);if(m.surname!=null)S.surname=String(m.surname).slice(0,30);
+  if(m.st&&S.st)for(const x in m.st)if(x in S.st)S.st[x]=Math.max(0,Math.min(100,+m.st[x]||0));
+  localStorage.setItem(k,String(t));updateHud();save();cl9Push(true);toast('✏️ La tua partita è stata aggiornata dall\'amministratrice del gioco.')}catch(e){console.warn('cl9 apply',e)}}
+setInterval(()=>{try{const u=OL9.user;if(!u||!OL9.db){if(OL9.wu){OL9.wu();OL9.wu=null;OL9.wuid=null}return}if(OL9.wuid===u.uid)return;if(OL9.wu)OL9.wu();OL9.wuid=u.uid;
+  OL9.wu=OL9.db.collection('utenti').doc(u.uid).onSnapshot(g=>cl9Apply(g.exists?g.data():null,u),()=>{})}catch(e){}},3000);

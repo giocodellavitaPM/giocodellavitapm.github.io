@@ -1,5 +1,8 @@
 /* ================= v9: le novità dell'aggiornamento del mese ================= */
-const NOV9={k:'2026-11',t:'Novità di novembre',l:[
+const NOV9={k:'2026-11b',t:'Altre novità di novembre',l:[
+  ['🏍️','Moto sulla strada','Moto, scooter, quad, trattori, furgoni, camion e autobus ora si guidano sulla strada, come la macchina. In curva la moto piega!'],
+  ['🛣️','Strada ad anello','Le strade non finiscono più negli alberi: arrivano tutte a una grande strada con quattro curvoni che gira intorno alla città.'],
+  ['🚕','Lavoro da tassista','Con la patente B ti puoi far assumere come tassista: ti danno il taxi giallo e ogni corsa ti paga.'],
   ['👶','Nascita più bella','Scegli carattere e stagione, poi guardi la scena della tua nascita.'],
   ['👤','Il tuo account','Entra con Google o con l\'email: la partita si salva online e la ritrovi su ogni computer e telefono.'],
   ['💻','Computer o telefono','Su computer vedi soldi in tasca e in banca accanto al tuo nome.'],

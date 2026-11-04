@@ -308,7 +308,7 @@ const T=44, W=CITYW, H=96, RX=[15,33,51,69,90,108,126,144,162,...[180,198,216,23
 const NRZ=[[92,179,27,66],[35,68,69,94]],inMZ=(x,y)=>NRZ.some(([a,b,c,d])=>x>=a&&x<=b&&y>=c&&y<=d),nrEdge=(x,y)=>NRZ.some(([a,b,c,d])=>x>=a&&x<=b&&y>=c&&y<=d&&(x===a||x===b||y===c||y===d));
 // 0 erba, 1 strada, 2 marciapiede, 3 acqua, 4 edificio, 5 albero, 6 vialetto, 7 piazza, 8 campo
 const map=new Uint8Array(W*H);
-const at=(x,y)=>(x<0||y<0||x>=W||y>=H)?5:map[y*W+x];
+const at=(x,y)=>(x<0||y<0||x>=W||y>=H)?out9(x,y):map[y*W+x];
 const setT=(x,y,v)=>{if(x>=0&&y>=0&&x<W&&y<H)map[y*W+x]=v};
 const BUILD=[
  {id:'casa',n:'Casa tua',ic:'🏠',x:4,y:3,w:6,h:5,roof:'#d9534f',wall:'#fbe3c8'},
@@ -362,7 +362,7 @@ const PARK={x:18,y:42,w:14,h:10};
     if(RY.some(r=>y===r||y===r+1)||RX.some(r=>x===r||x===r+1))v=1;
     else if(RY.some(r=>y===r-1||y===r+2)||RX.some(r=>x===r-1||x===r+2))v=2;
     if(inMZ(x,y))v=nrEdge(x,y)?2:0;
-    if(x===0||y===0||x===W-1||y===H-1)v=5;
+    if((x===0||y===0||x===W-1||y===H-1)&&v!==1&&v!==2)v=5;
     map[y*W+x]=v;
   }
   // laghetti, piazze, parchi
@@ -6266,7 +6266,7 @@ function tdDynamic(scn,dt,city){
   const L=[];
   if(city){TRAF.forEach(c=>{const [x,y]=carXY(c);if(Math.abs(x-S.pos.x)<34&&Math.abs(y-S.pos.y)<34)L.push([x,y,c.o==='h'?(c.d>0?0:Math.PI):(c.d>0?Math.PI/2:-Math.PI/2),c.col,c.stop,0,c.t9||(c.t9=TD_CARTYPES[Math.floor(Math.random()*TD_CARTYPES.length)])])});
     if(!S.carOut&&!S.drive)L.push([DRIVEWAY.x,DRIVEWAY.y,Math.PI/2,famCar().col]);famParked().forEach(q=>L.push([q.x,q.y,Math.PI/2,q.c.col]));
-    if(S.parked&&!S.ride)L.push([S.parked.x,S.parked.y,S.parked.ang,myCarCol(S.parked.id)]);
+    if(S.parked&&!S.ride)L.push([S.parked.x,S.parked.y,S.parked.ang,myCarCol(S.parked.id),0,0,typeof tdTypeOf9==='function'?tdTypeOf9(S.parked.id,0):undefined]);
     if(typeof JK!=='undefined'&&JK.pols)JK.pols.forEach((P,i)=>L.push([P.x,P.y,P.ang,'#f4f6f8',0,0,((TD.time*4|0)+i)%2?'polizia':'polizia2']));if(S.drive)L.push([S.pos.x,S.pos.y,S.drive.ang,famCar().col,0,1]);else if(S.famDrive)L.push([S.pos.x,S.pos.y,S.famDrive.ang,S.famDrive.jack?S.famDrive.jack.col:famCar().col,0,1,S.famDrive.jack&&S.famDrive.jack.t9]);else if(inCar)L.push([S.pos.x,S.pos.y,(ui.car||{}).ang||0,myCarCol(bestRide().id),0,1])}
   L.forEach(([x,y,a,col,stop,me,ty],i)=>{const sp=ty||(me?tdMyType():'berlina'),kk=col+sp;let c=TD.cars[i];if(!c||c.col!==kk){if(c)c.g.parent&&c.g.parent.remove(c.g);c=TD.cars[i]={g:tdCar(col,sp),col:kk}}if(c.g.parent!==scn)scn.add(c.g);c.g.position.set(x,0,y);c.g.rotation.y=-a});
   for(let i=L.length;i<TD.cars.length;i++){const c=TD.cars[i];if(c.g.parent)c.g.parent.remove(c.g)}
@@ -8950,10 +8950,10 @@ async function cl9Push(force,raw,old){const u=OL9.user;if(!u||!OL9.db)return;con
   if(raw===undefined)raw=localStorage.getItem(LS);let s=null;try{s=JSON.parse(raw||'null')}catch(e){}
   const F=firebase.firestore.FieldValue,data={nome:cl9Nm(u),email:u.email||'',accesso:((u.providerData||[])[0]||{}).providerId==='google.com'?'Google':'Email',ultimo:F.serverTimestamp(),
     personaggio:s&&s.name?{nome:s.name+' '+(s.surname||''),eta:s.age|0,citta:s.city||'',vivo:!!s.alive,soldi:Math.round((s.money||0)+(s.bank||0)),fa:(()=>{try{return (S&&S.name===s.name)?stageText():''}catch(e){return ''}})()}:null};
-  if(raw&&raw.length<900000)data.salvataggio=raw;if(old===null)data.creato=F.serverTimestamp();
+  if(raw&&raw.length<900000)data.salvataggio=raw;if(old===null)data.creato=F.serverTimestamp();if(OL9.fix)delete data.nome;
   try{await OL9.db.collection('utenti').doc(u.uid).set(data,{merge:true});localStorage.setItem('vita_cl9t_'+u.uid,String(Date.now()))}catch(e){console.warn('cl9 push',e)}}
 // dopo l'accesso: prende la partita online, oppure porta online quella di adesso
-async function cl9After(u){try{localStorage.setItem('vita_cl9','1')}catch(e){}let d;try{const g=await OL9.db.collection('utenti').doc(u.uid).get();d=g.exists?g.data():null}catch(e){d=undefined}
+async function cl9After(u){try{localStorage.setItem('vita_cl9','1')}catch(e){}let d;try{const g=await OL9.db.collection('utenti').doc(u.uid).get();d=g.exists?g.data():null}catch(e){d=undefined}try{if(d&&d.modAdmin&&d.modAdmin.toMillis)localStorage.setItem('vita_cl9m_'+u.uid,String(d.modAdmin.toMillis()));if(d)OL9.fix=!!d.nomeFisso}catch(e){}
   const id=cl9Id(u),o=ACC9.d();ACC9.stash();let a=o.list.find(x=>x.id===id);if(!a){a={id,n:cl9Nm(u),ic:'☁️',t:Date.now(),fb:1};o.list.push(a)}else a.n=cl9Nm(u);
   let raw=(d&&d.salvataggio)||localStorage.getItem('vita_sv9_'+id)||localStorage.getItem(LS)||null;o.cur=id;ACC9.w(o);
   try{if(raw)localStorage.setItem(LS,raw);else localStorage.removeItem(LS)}catch(e){}
@@ -9010,8 +9010,20 @@ addEventListener('pagehide',()=>{try{if(OL9.user&&S&&!acc9Busy){save();cl9Push(t
 try{if(localStorage.getItem('vita_cl9')==='1'||/apiKey=|mode=/.test(location.search))cl9Load().then(async()=>{const u=OL9.user;if(!u)return;const id=cl9Id(u);if(ACC9.d().cur!==id)return;
   try{const g=await OL9.db.collection('utenti').doc(u.uid).get();const d=g.exists?g.data():null;const loc=+localStorage.getItem('vita_cl9t_'+u.uid)||0,rem=d&&d.ultimo&&d.ultimo.toMillis?d.ultimo.toMillis():0;
     if(d&&d.salvataggio&&rem>loc+8000&&d.salvataggio!==localStorage.getItem(LS)){localStorage.setItem(LS,d.salvataggio);localStorage.setItem('vita_cl9t_'+u.uid,String(rem));toast('☁️ Carico la partita che hai giocato su un altro dispositivo…');acc9Go()}}catch(e){}}).catch(()=>{})}catch(e){}
+
+// modifiche fatte dall'amministratrice nell'app degli account: arrivano subito nella partita (soldi, nome, statistiche)
+function cl9Apply(d,u){try{if(!d)return;OL9.fix=!!d.nomeFisso;if(!d.modifica||!d.modAdmin||!d.modAdmin.toMillis)return;const t=d.modAdmin.toMillis(),k='vita_cl9m_'+u.uid,seen=+localStorage.getItem(k)||0;if(t<=seen)return;
+  if(!S||ACC9.d().cur!==cl9Id(u))return;const m=d.modifica;
+  if(typeof m.money==='number')S.money=Math.round(m.money);if(typeof m.bank==='number'&&S.bank!=null)S.bank=Math.round(m.bank);if(m.name)S.name=String(m.name).slice(0,30);if(m.surname!=null)S.surname=String(m.surname).slice(0,30);
+  if(m.st&&S.st)for(const x in m.st)if(x in S.st)S.st[x]=Math.max(0,Math.min(100,+m.st[x]||0));
+  localStorage.setItem(k,String(t));updateHud();save();cl9Push(true);toast('✏️ La tua partita è stata aggiornata dall\'amministratrice del gioco.')}catch(e){console.warn('cl9 apply',e)}}
+setInterval(()=>{try{const u=OL9.user;if(!u||!OL9.db){if(OL9.wu){OL9.wu();OL9.wu=null;OL9.wuid=null}return}if(OL9.wuid===u.uid)return;if(OL9.wu)OL9.wu();OL9.wuid=u.uid;
+  OL9.wu=OL9.db.collection('utenti').doc(u.uid).onSnapshot(g=>cl9Apply(g.exists?g.data():null,u),()=>{})}catch(e){}},3000);
 /* ================= v9: le novità dell'aggiornamento del mese ================= */
-const NOV9={k:'2026-11',t:'Novità di novembre',l:[
+const NOV9={k:'2026-11b',t:'Altre novità di novembre',l:[
+  ['🏍️','Moto sulla strada','Moto, scooter, quad, trattori, furgoni, camion e autobus ora si guidano sulla strada, come la macchina. In curva la moto piega!'],
+  ['🛣️','Strada ad anello','Le strade non finiscono più negli alberi: arrivano tutte a una grande strada con quattro curvoni che gira intorno alla città.'],
+  ['🚕','Lavoro da tassista','Con la patente B ti puoi far assumere come tassista: ti danno il taxi giallo e ogni corsa ti paga.'],
   ['👶','Nascita più bella','Scegli carattere e stagione, poi guardi la scena della tua nascita.'],
   ['👤','Il tuo account','Entra con Google o con l\'email: la partita si salva online e la ritrovi su ogni computer e telefono.'],
   ['💻','Computer o telefono','Su computer vedi soldi in tasca e in banca accanto al tuo nome.'],
@@ -9037,6 +9049,188 @@ function nov9Maybe(n){let s='';try{s=localStorage.getItem('vita_nov9')||''}catch
 {const _n=newLife;newLife=function(){const r=_n.apply(this,arguments);try{localStorage.setItem('vita_nov9',NOV9.k)}catch(e){}return r}}
 PHX9.nov9={t:'🆕 Novità',h:()=>`<div class="scr"><p style="margin:0 0 10px;color:var(--soft)">${NOV9.t}: ecco cosa c'è di nuovo nel gioco.</p>${nov9Html()}</div>`};
 {const _a=phApps;phApps=function(){const L=_a.apply(this,arguments),i=L.findIndex(x=>x[0]==='set');L.splice(i<0?L.length:i,0,['nov9','🆕','Novità']);return L}}
+/* ================= v9: motorino e moto si guidano sulla strada come la macchina (sali in sella, giri, parcheggi). Bici, skate, pattini e monopattini restano come prima ================= */
+// tutti i mezzi a motore (moto, scooter, quad, trattori, pick-up, furgoni, camion, autobus) ora vanno sulla strada come la macchina
+const MOT9={};
+ALLITEMS.forEach(i=>{if(!i||!i.veh||!i.ride||SHAPE[i.id]||(typeof AEREI!=='undefined'&&AEREI.includes(i)))return;
+  const big=['furgone','camion','tir','autobus','trattore','trattoregr','trattorino'].includes(i.id);SHAPE[i.id]=i.g==='moto'||i.id==='motorino'||i.id==='moto'?'moto':big?'van':'suv';MOT9[i.id]=SHAPE[i.id]==='moto'?'moto':big?'furgone':'suv'});
+const isMoto9=id=>!!id&&SHAPE[id]==='moto';
+const rideMoto9=()=>{try{return !!(S&&S.ride&&!S.drive&&!S.famDrive&&isMoto9((bestRide()||{}).id))}catch(e){return false}};
+// che modello 3D usare per un mezzo tuo (anche parcheggiato)
+function tdTypeOf9(id,me){if(isMoto9(id))return me?'moto9':'moto9p';if(id==='taxi9')return 'taxi';if(MOT9[id])return MOT9[id];return {sportiva:'sportiva',camper:'furgone',autousata:'utilitaria',autonuova:'berlina',suv:'suv',monovolume:'furgone',utilitaria:'utilitaria',elettrica:'utilitaria'}[id]||'berlina'}
+{const _t=tdMyType;tdMyType=function(){try{if(!S.drive&&!S.famDrive&&S.ride){const r=bestRide();if(r&&(MOT9[r.id]||r.id==='taxi9'))return tdTypeOf9(r.id,1)}}catch(e){}return _t.apply(this,arguments)}}
+
+// sali in sella: serve il casco se sei piccolo, e i messaggi parlano di moto e non di macchina
+let mtT9=0;
+{const _ci=carIn;carIn=function(rb){if(rb&&isMoto9(rb.id)){if(S.age<18&&typeof hasCasco==='function'&&!hasCasco())return toast('⛑️ La mamma dice: «Senza casco non si sale!» Compralo al negozio di bici o al centro commerciale (35 €).');mtT9=performance.now()}
+  const r=_ci.apply(this,arguments);if(rb&&isMoto9(rb.id)&&S.ride)toast(`${rb.ic||'🏍️'} Sei in sella! Trascina il dito dove vuoi andare: la moto piega in curva e va avanti. Al rosso ci si ferma! 🚦`);return r}}
+{const _co=carOut;carOut=function(rb){if(rideMoto9())mtT9=performance.now();return _co.apply(this,arguments)}}
+{const _to=toast;toast=function(m){try{if(typeof m==='string'&&(rideMoto9()||performance.now()-mtT9<600))m=m.replace(/la tua macchina/g,'la tua moto').replace(/la macchina/g,'la moto').replace(/La macchina/g,'La moto').replace(/in macchina/g,'in moto').replace(/macchina/g,'moto').replace(/al volante/g,'in sella').replace(/🚗/g,'🏍️')}catch(e){}return _to.call(this,m)}}
+
+// in 2D: la moto vista dall'alto, con te sopra col casco
+function drawMoto9(x,y,ang,col,stop,rider){const c=cx,L=T*1.02,w=11;c.save();c.translate(x*T,y*T);c.rotate(ang);c.scale(1.3,1.3);
+  c.fillStyle='rgba(0,0,0,.2)';rr(c,-L/2+2,-w/2+3,L,w,5);c.fill();
+  c.fillStyle='#17181a';rr(c,L/2-13,-3,12,6,3);c.fill();rr(c,-L/2+1,-3.5,13,7,3);c.fill();
+  {const g=c.createLinearGradient(0,-w/2,0,w/2);g.addColorStop(0,shade(col,1.25));g.addColorStop(.5,col);g.addColorStop(1,shade(col,.7));c.fillStyle=g}
+  rr(c,-L/2+9,-w/2+1,L-20,w-2,4);c.fill();c.fillStyle='#24262a';rr(c,-L*.18,-3.2,L*.26,6.4,3);c.fill();
+  c.strokeStyle='#2b2d31';c.lineWidth=2.4;c.lineCap='round';c.beginPath();c.moveTo(L/2-12,-9);c.lineTo(L/2-12,9);c.stroke();
+  c.fillStyle='#fff6d0';c.beginPath();c.arc(L/2-2,0,2.4,0,7);c.fill();c.fillStyle=stop?'#ff3b30':'#8c2f2f';c.fillRect(-L/2,-2,2.2,4);
+  if(rider){let lk={};try{lk=playerLook()||{}}catch(e){}
+    c.fillStyle=lk.shirt||'#4a5d7e';c.beginPath();c.ellipse(-L*.04,0,6,10,0,0,7);c.fill();
+    c.strokeStyle=lk.skin||'#f1c9a5';c.lineWidth=3;c.beginPath();c.moveTo(-L*.02,-8);c.lineTo(L/2-13,-8.5);c.moveTo(-L*.02,8);c.lineTo(L/2-13,8.5);c.stroke();
+    const hg=c.createRadialGradient(L*.04,-2,1,L*.02,0,7.5);hg.addColorStop(0,'#ffffff');hg.addColorStop(.35,col);hg.addColorStop(1,shade(col,.55));c.fillStyle=hg;c.beginPath();c.arc(L*.02,0,7,0,7);c.fill();
+    c.fillStyle='rgba(20,28,40,.85)';c.beginPath();c.arc(L*.02,0,7,-.9,.9);c.lineTo(L*.02+3,0);c.fill()}
+  c.restore()}
+{const _d=drawCarAt;drawCarAt=function(x,y,ang,col,stop,sh){if(sh!=='moto')return _d.apply(this,arguments);
+  const me=S&&S.ride&&S.scene==='citta'&&Math.abs(x-S.pos.x)<.01&&Math.abs(y-S.pos.y)<.01;return drawMoto9(x,y,ang,col,stop,me)}}
+
+// in 3D: una moto vera (ruote, serbatoio, sella, manubrio, faro) e tu seduto sopra col casco
+const tdMotoC9={};
+function tdMoto9(col,rider){const g=new THREE.Group(),vc=tdVCM||(tdVCM=new THREE.MeshLambertMaterial({vertexColors:true}));
+  if(!tdPaintM){try{tdCar(col,'berlina')}catch(e){}}
+  const k=col;let P=tdMotoC9[k];
+  if(!P){const pc=tdC(col),B=[],L=[],LL=[],o3=new THREE.Object3D(),at=(p,r,s)=>{o3.position.set(...p);o3.rotation.set(...(r||[0,0,0]));o3.scale.set(...(s||[1,1,1]));o3.updateMatrix();return o3.matrix.clone()};
+    // ruote
+    [.36,-.36].forEach(x=>{B.push({g:new THREE.TorusGeometry(.11,.042,10,22),c:'#141414',p:[x,.15,0]},{g:new THREE.CylinderGeometry(.075,.075,.05,16),c:'#9aa0a6',p:[x,.15,0],r:[Math.PI/2,0,0]},{g:new THREE.CylinderGeometry(.025,.025,.08,8),c:'#2a2d31',p:[x,.15,0],r:[Math.PI/2,0,0]})});
+    // telaio, motore, scarico
+    B.push({g:tdBox(.36,.14,.12),c:'#3a3d42',p:[-.02,.26,0]},{g:tdBox(.08,.08,.1),c:'#55595f',p:[.1,.2,0]},{g:new THREE.CylinderGeometry(.025,.03,.42,10),c:'#c9ced3',p:[-.2,.2,.08],r:[0,0,Math.PI/2+.12]});
+    // forcella e manubrio
+    [-1,1].forEach(s=>B.push({g:new THREE.CylinderGeometry(.016,.016,.42,8),c:'#b9bec4',p:[.31,.34,s*.045],r:[0,0,.32]}));
+    B.push({g:new THREE.CylinderGeometry(.014,.014,.42,8),c:'#202226',p:[.25,.55,0],r:[Math.PI/2,0,0]});[-1,1].forEach(s=>B.push({g:new THREE.CylinderGeometry(.02,.02,.07,8),c:'#111',p:[.25,.55,s*.2],r:[Math.PI/2,0,0]}));
+    // carrozzeria colorata: serbatoio, codino, parafanghi, cupolino
+    L.push([tdPaint(new THREE.SphereGeometry(.12,16,12),pc),at([.12,.4,0],[0,0,-.12],[1.25,.62,.8])],
+      [tdPaint(tdBox(.26,.06,.12),pc),at([-.24,.4,0],[0,0,.18])],
+      [tdPaint(new THREE.SphereGeometry(.13,14,8,0,Math.PI*2,0,Math.PI/2),pc),at([.36,.2,0],[0,0,0],[1,.45,.5])],
+      [tdPaint(new THREE.SphereGeometry(.13,14,8,0,Math.PI*2,0,Math.PI/2),pc),at([-.38,.21,0],[0,0,0],[1,.4,.5])],
+      [tdPaint(new THREE.SphereGeometry(.08,12,10),pc),at([.33,.5,0],[0,0,-.4],[1.1,1,1.15])]);
+    B.push({g:tdBox(.26,.05,.13),c:'#1d1e21',p:[-.07,.45,0],r:[0,0,.05]});
+    LL.push({g:new THREE.SphereGeometry(.04,12,8),c:'#fffaf0',p:[.4,.5,0],s:[.6,1,1]},{g:tdBox(.02,.03,.07),c:'#e3141b',p:[-.38,.44,0]});
+    P=tdMotoC9[k]={paint:tdGeoMerge(L),matte:tdCM(B,true,tdMatteM).geometry,lights:tdCM(LL,false,TD.carLightM).geometry}}
+  const a=new THREE.Mesh(P.paint,tdPaintM),b=new THREE.Mesh(P.matte,tdMatteM),c=new THREE.Mesh(P.lights,TD.carLightM);a.castShadow=b.castShadow=true;g.add(a,b,c);
+  if(TD.beamM&&TD.beamG){const bm=new THREE.Mesh(TD.beamG,TD.beamM);bm.scale.set(.6,1,.5);bm.position.set(1.05,.03,0);bm.renderOrder=2;g.add(bm)}
+  if(rider){try{const lk=playerLook(),h=tdHuman(lk);h.g.position.set(-.1,.16,0);
+      (h.legs||[]).forEach(l=>{l.rotation.z=1.05});(h.arms||[]).forEach(a=>{a.rotation.z=1.1});
+      const head=h.g.children.find(o=>o.isMesh&&o.geometry===tdHeadG);
+      if(head){const hm=new THREE.Mesh(new THREE.SphereGeometry(.104,20,14,0,Math.PI*2,0,Math.PI*.62),new THREE.MeshStandardMaterial({color:tdC(col),metalness:.3,roughness:.3}));hm.position.copy(head.position);hm.position.y+=.012;hm.scale.copy(head.scale);
+        const vs=new THREE.Mesh(new THREE.SphereGeometry(.107,16,10,-.9,1.8,Math.PI*.3,Math.PI*.3),new THREE.MeshStandardMaterial({color:0x1b2430,metalness:.6,roughness:.15}));vs.position.copy(hm.position);vs.scale.copy(head.scale);h.g.add(hm,vs)}
+      h.g.traverse(o=>{if(o.isMesh)o.castShadow=true});g.add(h.g);g.userData.rider9=h}catch(e){}}
+  g.userData.moto9=1;return g}
+{const _c=tdCar;tdCar=function(col,type){if(type==='moto9'||type==='moto9p')return tdMoto9(col,type==='moto9');return _c.apply(this,arguments)}}
+// in curva la moto piega verso l'interno (la macchina invece si inclina un pochino verso fuori)
+{const _d=tdDynamic;tdDynamic=function(scn,dt,city){const r=_d.apply(this,arguments);try{const F=TD.cf;if(F&&F.g&&F.g.userData.moto9){F.g.rotation.x=-F.roll*5;F.g.rotation.z=F.pitch*.5}}catch(e){}return r}}
+/* ================= v9: la grande strada ad anello intorno alla città. Le strade non finiscono più contro gli alberi:
+   arrivano tutte sull'anello, che gira intorno alla città con quattro grandi curve e ti riporta dentro ================= */
+var RG9M=13;            // quanto si può andare fuori dalla città (in caselle) con la telecamera
+const RG9={O:7,R:12,cars:[],g3:[],stubs:null};
+// distanza (con il segno) dalla linea in mezzo all'anello: un rettangolo con gli angoli molto arrotondati
+function rg9D(px,py){const O=RG9.O,R=RG9.R,cx0=W/2,cy0=H/2,hx=W/2+O,hy=H/2+O,qx=Math.abs(px-cx0)-(hx-R),qy=Math.abs(py-cy0)-(hy-R);
+  return Math.hypot(Math.max(qx,0),Math.max(qy,0))+Math.min(Math.max(qx,qy),0)-R}
+// le strade della città che arrivano al bordo continuano fino all'anello
+function rg9S(x,y,dx,dy){const v=map[y*W+x];if(v===1)return 1;if(v===2&&(map[(y+dy)*W+x+dx]===1||map[(y-dy)*W+x-dx]===1))return 2;return 0}
+// cosa c'è fuori dalla mappa: anello, pezzi di strada che lo raggiungono, prato e poi alberi
+function out9(x,y){try{const O=RG9.O,sd=rg9D(x+.5,y+.5),d=Math.abs(sd);let sv=0;
+  if(x>=1&&x<W-1&&y<0&&y>=-O)sv=rg9S(x,1,1,0);else if(x>=1&&x<W-1&&y>=H&&y<H+O)sv=rg9S(x,H-2,1,0);
+  else if(y>=1&&y<H-1&&x<0&&x>=-O)sv=rg9S(1,y,0,1);else if(y>=1&&y<H-1&&x>=W&&x<W+O)sv=rg9S(W-2,y,0,1);
+  if(d<1||sv===1)return 1;if(d<2||sv===2)return 2;return sd<0||d<6?0:5}catch(e){return 5}}
+
+// il percorso dell'anello: dato un punto s (in caselle, girando in senso orario) dà posizione e direzione
+function rg9P(s){const O=RG9.O,R=RG9.R,x0=-O,x1=W+O,y0=-O,y1=H+O,Lh=x1-x0-2*R,Lv=y1-y0-2*R,A=Math.PI*R/2,P=2*Lh+2*Lv+4*A;
+  s=((s%P)+P)%P;const arc=(cx0,cy0,a0,t)=>{const a=a0+t/R;return {x:cx0+R*Math.cos(a),y:cy0+R*Math.sin(a),tx:-Math.sin(a),ty:Math.cos(a)}};
+  if(s<Lh)return {x:x0+R+s,y:y0,tx:1,ty:0};s-=Lh;if(s<A)return arc(x1-R,y0+R,-Math.PI/2,s);s-=A;
+  if(s<Lv)return {x:x1,y:y0+R+s,tx:0,ty:1};s-=Lv;if(s<A)return arc(x1-R,y1-R,0,s);s-=A;
+  if(s<Lh)return {x:x1-R-s,y:y1,tx:-1,ty:0};s-=Lh;if(s<A)return arc(x0+R,y1-R,Math.PI/2,s);s-=A;
+  if(s<Lv)return {x:x0,y:y1-R-s,tx:0,ty:-1};s-=Lv;return arc(x0+R,y0+R,Math.PI,s)}
+const rg9Len=()=>{const O=RG9.O,R=RG9.R;return 2*(W+2*O-2*R)+2*(H+2*O-2*R)+2*Math.PI*R};
+// i pezzi di strada (e marciapiede) che uniscono la città all'anello: [x, y, larghezza, altezza, tipo]
+function rg9Stubs(){if(RG9.stubs)return RG9.stubs;const L=[],O=RG9.O;
+  for(let x=1;x<W-1;x++){const a=rg9S(x,1,1,0),b=rg9S(x,H-2,1,0);if(a)L.push([x,-O,1,O,a]);if(b)L.push([x,H,1,O,b])}
+  for(let y=1;y<H-1;y++){const a=rg9S(1,y,0,1),b=rg9S(W-2,y,0,1);if(a)L.push([-O,y,O,1,a]);if(b)L.push([W,y,O,1,b])}
+  return RG9.stubs=L}
+
+/* ---------- in 2D: l'anello disegnato liscio, con le curve vere ---------- */
+function rg9Path(c,k){const O=RG9.O,R=RG9.R;rr(c,(-O-k)*T,(-O-k)*T,(W+2*O+2*k)*T,(H+2*O+2*k)*T,(R+k)*T)}
+{const _dc=drawCity;drawCity=function(t,x0,y0,x1,y1){_dc.apply(this,arguments);try{if(ui.td9bake||!S||S.scene!=='citta')return;const O=RG9.O;
+    if(x0>O+3&&y0>O+3&&x1<W-O-4&&y1<H-O-4)return;const c=cx;c.save();
+    c.lineJoin='round';c.strokeStyle=PAT.walk||'#b8b3a8';c.lineWidth=4*T;rg9Path(c,0);c.stroke();
+    rg9Stubs().forEach(([x,y,w,h,v])=>{if(v===2){c.fillStyle=PAT.walk||'#b8b3a8';c.fillRect(x*T,y*T,w*T,h*T)}});
+    rg9Stubs().forEach(([x,y,w,h,v])=>{if(v===1){c.fillStyle=PAT.asphalt||'#57595d';c.fillRect(x*T,y*T,w*T,h*T)}});
+    c.strokeStyle='#8f8a80';c.lineWidth=2.5;rg9Path(c,2-.03);c.stroke();rg9Path(c,-2+.03);c.stroke();
+    c.strokeStyle=PAT.asphalt||'#57595d';c.lineWidth=2*T;rg9Path(c,0);c.stroke();
+    c.strokeStyle='rgba(255,255,255,.75)';c.lineWidth=2;rg9Path(c,.86);c.stroke();rg9Path(c,-.86);c.stroke();
+    c.strokeStyle='#e0b83a';c.lineWidth=3;c.setLineDash([T*.55,T*.45]);rg9Path(c,0);c.stroke();c.setLineDash([]);
+    // le macchine che girano sull'anello
+    RG9.cars.forEach(k=>{const p=rg9Car(k);if(p[0]<x0-3||p[0]>x1+3||p[1]<y0-3||p[1]>y1+3)return;drawCarAt(p[0],p[1],p[2],k.col,k.stop)});
+    c.restore()}catch(e){}}}
+// la telecamera 2D ora può andare anche fuori dalla città, sull'anello
+
+/* ---------- le macchine sull'anello: vanno a destra, come in Italia, e si fermano se c'è qualcuno davanti ---------- */
+(function(){const r=seeded(919),P=rg9Len();for(let i=0;i<12;i++)RG9.cars.push({s:r()*P,d:i%2?1:-1,v:2.2+r()*1.2,col:CAR_COL[Math.floor(r()*CAR_COL.length)],t9:['berlina','suv','utilitaria','sportiva','taxi','furgone'][i%6],stop:false})})();
+function rg9Car(k){const p=rg9P(k.s),tx=p.tx*k.d,ty=p.ty*k.d;return [p.x-ty*.5,p.y+tx*.5,Math.atan2(ty,tx)]}
+function rg9Tick(dt){if(!S||S.scene!=='citta'||dt<=0)return;const pos=RG9.cars.map(rg9Car);
+  RG9.cars.forEach((k,i)=>{const [x,y,a]=pos[i],ca=Math.cos(a),sa=Math.sin(a),ahead=(ox,oy,len,wd)=>{const rx=ox-x,ry=oy-y,al=rx*ca+ry*sa,pe=Math.abs(-rx*sa+ry*ca);return al>0&&al<len&&pe<wd};
+    let stop=ahead(S.pos.x,S.pos.y,1.9,.8);if(!stop)for(let j=0;j<pos.length&&!stop;j++)if(j!==i&&RG9.cars[j].d===k.d&&ahead(pos[j][0],pos[j][1],2.4,.45))stop=true;
+    k.stop=stop;if(!stop)k.s+=k.d*k.v*dt})}
+{const _t=trafficTick;trafficTick=function(dt){const r=_t.apply(this,arguments);try{rg9Tick(dt)}catch(e){}return r}}
+// la tua macchina non passa attraverso quelle dell'anello
+{const _m=carMove;carMove=function(st,dt,maxV){try{if(S.pos.x<4||S.pos.y<4||S.pos.x>W-4||S.pos.y>H-4){const v=st.v||0;if(Math.abs(v)>.02){const ca=Math.cos(st.ang),sa=Math.sin(st.ang),sg=Math.sign(v);
+      for(const k of RG9.cars){const [ox,oy]=rg9Car(k),rx=ox-S.pos.x,ry=oy-S.pos.y,al=(rx*ca+ry*sa)*sg,pe=Math.abs(-rx*sa+ry*ca);if(al>0&&al<1.6&&pe<.75){st.v=0;return false}}}}}catch(e){}return _m.apply(this,arguments)}}
+
+/* ---------- in 3D: asfalto, marciapiedi, righe, e una fila di alberi fuori dall'anello ---------- */
+function rg9Ribbon(k0,k1,y,col){const N=Math.round(rg9Len()*1.2),P=[],I=[],C=[],c=tdC(col),pp=[];
+  for(let i=0;i<=N;i++){const p=rg9P(i/N*rg9Len()),nx=-p.ty,ny=p.tx;pp.push(p);P.push(p.x+nx*k0,y,p.y+ny*k0,p.x+nx*k1,y,p.y+ny*k1);C.push(c.r,c.g,c.b,c.r,c.g,c.b);
+    if(i<N){const a=i*2;I.push(a,a+1,a+2,a+1,a+3,a+2)}}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));g.setAttribute('color',new THREE.Float32BufferAttribute(C,3));g.setIndex(I);g.computeVertexNormals();
+  const n=g.attributes.normal;for(let i=0;i<n.count;i++)n.setXYZ(i,0,1,0);return g}
+function rg9Build(sc){if(!sc)return;const G=new THREE.Group();G.name='anello9';sc.add(G);const M=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide});
+  // a destra del verso orario c'è l'interno (verso la città)
+  const parts=[[-2,2,.006,'#aaa59a'],[-1,1,.014,'#45474b'],[.84,.92,.02,'#e8e8e2'],[-.92,-.84,.02,'#e8e8e2'],[1.96,2.04,.03,'#8f8a80'],[-2.04,-1.96,.03,'#8f8a80']];
+  parts.forEach(([a,b,y,c])=>{const m=new THREE.Mesh(rg9Ribbon(a,b,y,c),M);m.receiveShadow=true;G.add(m)});
+  // pezzi di strada fino all'anello
+  const st=rg9Stubs(),pl=new THREE.PlaneGeometry(1,1).rotateX(-Math.PI/2),o3=new THREE.Object3D();
+  [[1,'#45474b',.016],[2,'#aaa59a',.008]].forEach(([v,c,y])=>{const L=st.filter(s=>s[4]===v);if(!L.length)return;const im=new THREE.InstancedMesh(pl,tdMat(c),L.length);
+    L.forEach(([x,yy,w,h],i)=>{o3.position.set(x+w/2,y,yy+h/2);o3.scale.set(w,1,h);o3.updateMatrix();im.setMatrixAt(i,o3.matrix)});im.receiveShadow=true;G.add(im)});
+  // riga gialla tratteggiata in mezzo
+  const P=rg9Len(),nd=Math.floor(P/1.1),dm=new THREE.InstancedMesh(new THREE.PlaneGeometry(.55,.07).rotateX(-Math.PI/2),tdMat('#e0b021'),nd);
+  for(let i=0;i<nd;i++){const p=rg9P(i*1.1);o3.position.set(p.x,.022,p.y);o3.rotation.set(0,-Math.atan2(p.ty,p.tx),0);o3.scale.set(1,1,1);o3.updateMatrix();dm.setMatrixAt(i,o3.matrix)}G.add(dm);
+  // alberi fuori dall'anello e qualcuno nel prato verso la città
+  const r=seeded(4242),TR=[];for(let s=0;s<P;s+=2.2){const p=rg9P(s),nx=-p.ty,ny=p.tx;TR.push([p.x-nx*(3.4+r()*2.5),p.y-ny*(3.4+r()*2.5),.8+r()*.5]);if(r()<.35)TR.push([p.x-nx*(6+r()*3),p.y-ny*(6+r()*3),.9+r()*.6]);
+    if(r()<.18){const k=3+r()*1.6,x=p.x+nx*k,y=p.y+ny*k;if(Math.abs(rg9D(x,y))>2.6&&(x<-.5||y<-.5||x>W+.5||y>H+.5)&&!st.some(([a,b,w,h])=>x>a-1&&x<a+w+1&&y>b-1&&y<b+h+1))TR.push([x,y,.7+r()*.4])}}
+  const tg=new THREE.CylinderGeometry(.07,.1,.7,7).translate(0,.35,0),cg=new THREE.SphereGeometry(.5,10,8).translate(0,1.05,0),ti=new THREE.InstancedMesh(tg,tdMat('#6b4a2e'),TR.length),ci=new THREE.InstancedMesh(cg,tdMat('#3f7a32'),TR.length),cc=new THREE.Color();
+  TR.forEach(([x,y,s],i)=>{o3.position.set(x,0,y);o3.rotation.set(0,r()*6,0);o3.scale.set(s,s*(.9+r()*.3),s);o3.updateMatrix();ti.setMatrixAt(i,o3.matrix);ci.setMatrixAt(i,o3.matrix);cc.set(tdMix('#2f5a25','#5d8e3e',r()));ci.setColorAt(i,cc)});
+  ti.castShadow=ci.castShadow=true;G.add(ti,ci);RG9.g=G}
+{const _b=tdBuildCity;tdBuildCity=function(){const r=_b.apply(this,arguments);try{rg9Build(TD.city&&TD.city.sc)}catch(e){console.warn('anello9',e)}return r}}
+// in 3D le macchine dell'anello
+{const _d=tdDynamic;tdDynamic=function(scn,dt,city){const r=_d.apply(this,arguments);try{RG9.cars.forEach((k,i)=>{let e=RG9.g3[i];
+    if(!city){if(e&&e.parent)e.parent.remove(e);return}
+    const [x,y,a]=rg9Car(k);if(Math.abs(x-S.pos.x)>40||Math.abs(y-S.pos.y)>40){if(e&&e.parent)e.parent.remove(e);return}
+    if(!e)e=RG9.g3[i]=tdCar(k.col,k.t9);if(e.parent!==scn)scn.add(e);e.position.set(x,0,y);e.rotation.y=-a})}catch(e){}return r}}
+/* ================= v9: il lavoro da TASSISTA: ti danno il taxi giallo della ditta, giri per la città e porti i passeggeri dove vogliono ================= */
+JOBS.splice(3,0,{id:'tassista',m:'Tassista',f:'Tassista',sal:21000,min:18,req:s=>!!(s.lic&&s.lic.b),rt:'Patente B (auto)'});
+if(typeof JOBHRS!=='undefined')JOBHRS.tassista=[8,20,'Giri per la città con il taxi giallo e porti le persone dove vogliono'];
+if(typeof WORKAT!=='undefined')WORKAT.tassista='auto';
+if(typeof WORKTXT!=='undefined')WORKTXT.tassista='Hai lavato e controllato il taxi: è pronto per le corse! 🚕';
+if(typeof JOBDESC!=='undefined')JOBDESC.tassista='Faccio il tassista: porto le persone in giro per la città con il mio taxi giallo! 🚕';
+// il taxi della ditta: non si compra, te lo danno quando ti assumono
+ALLITEMS.push({id:'taxi9',n:'Taxi della ditta',ic:'🚕',p:0,age:18,lic:'b',up:0,fel:0,veh:true,speed:2.5,ride:true,job9:1});
+SHAPE.taxi9='city';
+const isTassista9=()=>!!(S&&S.job&&S.job.id==='tassista');
+const inTaxi9=()=>{try{return !!(S&&S.ride&&!S.drive&&!S.famDrive&&(bestRide()||{}).id==='taxi9')}catch(e){return false}};
+function tx9Sync(){if(!S||!S.items)return;const has=S.items.some(i=>i.id==='taxi9');
+  if(isTassista9()&&!has){S.items.push({id:'taxi9',n:'Taxi della ditta',ic:'🚕',p:0,up:0,veh:true,speed:2.5,col:'#f2c21a'});save()}
+  else if(!isTassista9()&&has){if(inTaxi9()){S.ride=false;ui.car=null}if(S.parked&&S.parked.id==='taxi9')S.parked=null;if(S.rideSel==='taxi9')S.rideSel=null;S.items=S.items.filter(i=>i.id!=='taxi9');save();updateHud()}}
+setInterval(()=>{try{tx9Sync()}catch(e){}},1500);
+// vai al lavoro = sali sul taxi
+function tx9Start(){tx9Sync();if(S.scene!=='citta'){toast('🚕 Esci in strada: il tuo taxi giallo ti aspetta! Poi premi di nuovo «Vai al lavoro».');return}
+  const d=ALLITEMS.find(x=>x.id==='taxi9');if(inTaxi9())return toast('🚕 Sei già sul taxi! Gira per la città: chi alza la mano 🙋 vuole un passaggio.');
+  if(S.ride&&isCar((bestRide()||{}).id))carOut(bestRide());if(S.ride&&!isCar((bestRide()||{}).id))S.ride=false;
+  S.rideSel='taxi9';if(S.parked&&S.parked.id!=='taxi9')S.parked=null;carIn(d);if(inTaxi9()){TX9.cd=Math.min(TX9.cd,4);toast('🚕 Sei sul tuo taxi! Gira per la città: chi alza la mano 🙋 vuole un passaggio. Ogni corsa ti paga!')}}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-gowork9="job"],[data-gowork]');if(!b||!isTassista9())return;e.stopPropagation();e.preventDefault();try{closeSheet()}catch(_){}tx9Start()},true);
+// per il tassista i passeggeri arrivano più spesso; in moto invece nessuno ti chiede il taxi
+{const _c=txCar;txCar=function(){if(typeof rideMoto9==='function'&&rideMoto9())return false;return _c.apply(this,arguments)}}
+{const _d=txDone;txDone=function(g){const r=_d.apply(this,arguments);if(isTassista9()&&inTaxi9()){TX9.cd=6;S.done=S.done||{};S.tx9oggi=(S.tx9oggi||0)+1}return r}}
+{const _t=txTick;txTick=function(dt){if(isTassista9()&&inTaxi9()&&!TX9.p&&!TX9.go&&TX9.cd>8)TX9.cd=8;return _t.apply(this,arguments)}}
+// sul taxi c'è la scritta TAXI anche in 2D
+{const _d=drawCarAt;drawCarAt=function(x,y,ang,col,stop,sh){const r=_d.apply(this,arguments);try{if(col==='#f2c21a'&&sh==='city'){const c=cx;c.save();c.translate(x*T,y*T);c.rotate(ang);c.fillStyle='#fffbe8';rr(c,-7,-4.5,12,9,2);c.fill();c.fillStyle='#1f2540';c.font='800 6px system-ui';c.textAlign='center';c.textBaseline='middle';c.rotate(Math.PI/2);c.fillText('TAXI',0,1);c.restore()}}catch(e){}return r}}
 function drawPalazzo(a){
   const X=a.x*T,Y=a.y*T,Wd=a.w*T,Hd=a.h*T,c=cx;
   c.fillStyle='rgba(0,0,0,.2)';c.beginPath();c.moveTo(X+Wd,Y+6);c.lineTo(X+Wd+14,Y+18);c.lineTo(X+Wd+14,Y+Hd+8);c.lineTo(X+10,Y+Hd+8);c.lineTo(X,Y+Hd);c.closePath();c.fill();
@@ -9341,8 +9535,8 @@ function draw(t){
   if(!S){cx.fillStyle='#8ccf72';cx.fillRect(0,0,VW,VH);return}
   const sc=curSc(),city=sc.id==='citta',mw=sc.w*T,mh=sc.h*T;
   const topPad=city?0:70;
-  cam.x=mw<=VW?(mw-VW)/2:Math.max(0,Math.min(mw-VW,S.pos.x*T-VW/2));
-  cam.y=mh+topPad<=VH?(mh-VH)/2-topPad/2:Math.max(-topPad,Math.min(mh-VH+90,S.pos.y*T-VH/2));
+  cam.x=mw<=VW?(mw-VW)/2:Math.max(city?-RG9M*T:0,Math.min(mw-VW+(city?RG9M*T:0),S.pos.x*T-VW/2));
+  cam.y=mh+topPad<=VH?(mh-VH)/2-topPad/2:Math.max(city?-RG9M*T:-topPad,Math.min(mh-VH+90+(city?RG9M*T:0),S.pos.y*T-VH/2));
   cx.fillStyle=city?'#78a253':'#2b2825';cx.fillRect(0,0,VW,VH);
   cx.save();cx.translate(-Math.round(cam.x),-Math.round(cam.y));
   const x0=Math.max(0,Math.floor(cam.x/T)),y0=Math.max(0,Math.floor(cam.y/T)),x1=Math.min(sc.w-1,Math.ceil((cam.x+VW)/T)),y1=Math.min(sc.h-1,Math.ceil((cam.y+VH)/T));
