@@ -24,14 +24,14 @@ button{font:inherit;font-weight:800;border-radius:12px;padding:9px 14px;border:1
 .st{display:grid;gap:6px;margin:8px 0}.st div{display:grid;grid-template-columns:110px 1fr 34px;gap:8px;align-items:center;font-size:13px;font-weight:700}.st i{height:8px;border-radius:9px;background:var(--line);overflow:hidden}.st i u{display:block;height:100%;background:var(--acc)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}.err{color:var(--bad);font-weight:800}.neg{color:var(--bad)}
 .empty{color:var(--soft);text-align:center;padding:30px}
-.ed label{display:block;font-size:12.5px;font-weight:800;color:var(--soft);margin:8px 0 3px}.ed input{width:100%;box-sizing:border-box;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit}.ed .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ed .ok{color:var(--acc);font-weight:800}.acc9{margin:12px 0 4px;padding:10px 12px;border-radius:14px;background:var(--card2)}.acc9 b{font-size:15px}
+.ed label{display:block;font-size:12.5px;font-weight:800;color:var(--soft);margin:8px 0 3px}.ed input,.ed select{width:100%;box-sizing:border-box;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit}.ed .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ed .ok{color:var(--acc);font-weight:800}.acc9{margin:12px 0 4px;padding:10px 12px;border-radius:14px;background:var(--card2)}.acc9 b{font-size:15px}
 .ins{margin:12px 0;padding:10px 12px;border-radius:14px;background:var(--card2);font-size:13px;font-weight:600;color:var(--soft)}
 </style></head><body><div class="w">
 <header><img src="icona-192.png" alt=""><div><h1>Account del gioco</h1><small>Gioco della Vita PM</small></div><span class="sp"></span><span class="live" id="lv" hidden><i></i>dal vivo</span></header>
 <div id="app"><div class="card">⏳ Carico…</div></div></div>
 <script src="fb/firebase-app-compat.js"></script><script src="fb/firebase-auth-compat.js"></script><script src="fb/firebase-firestore-compat.js"></script>
 <script>
-if('serviceWorker' in navigator)navigator.serviceWorker.register('admin-sw.js').catch(()=>{});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 firebase.initializeApp({apiKey:"AIzaSyBJRUlGK_ArYn2K_pJ0ePChTUC3gkikwgY",authDomain:"gioco-della-vita-pm.firebaseapp.com",projectId:"gioco-della-vita-pm",storageBucket:"gioco-della-vita-pm.firebasestorage.app",messagingSenderId:"83815479634",appId:"1:83815479634:web:86220d0844b898c5e1628b"});
 const A=firebase.auth(),D=firebase.firestore(),$=s=>document.querySelector(s),app=$('#app');let rows=[],unsub=null;
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -44,7 +44,7 @@ const SC={asilo:'Asilo',elementari:'Scuola elementare',medie:'Scuola media',lice
 function info(r){let s=null;try{s=r.salvataggio?JSON.parse(r.salvataggio):null}catch(e){}const p=r.personaggio||{};
   if(!s)return {nome:p.nome||'—',eta:p.eta,citta:p.citta,vivo:p.vivo,tot:p.soldi||0,tasca:null,banca:null,fa:p.fa||''};
   const fa=p.fa||(s.age<3?'Neonato':s.school?(SC[s.school.tipo]||s.school.tipo)+(s.school.anno?' · '+s.school.anno+'ª':''):s.uni?'Università':s.job?'Lavora':s.retired?'In pensione':s.age>=16?'Cerca lavoro':'—');
-  return {nome:(s.name||'')+' '+(s.surname||''),sesso:s.sex,eta:s.age,citta:s.city,vivo:s.alive,tasca:s.money||0,banca:s.bank,tot:(s.money||0)+(s.bank||0),fa,
+  const pa=pend(r);return {nome:(s.name||'')+' '+(s.surname||''),sesso:s.sex,eta:pa&&pa.age!=null?pa.age:s.age,citta:s.city,vivo:s.alive,tasca:s.money||0,banca:s.bank,tot:(s.money||0)+(s.bank||0),fa,
     st:s.st||{},casa:s.house?s.house.n:(s.home==='genitori'?'Con mamma e papà':s.home||'—'),veicoli:(s.items||[]).filter(i=>i.veh).map(i=>(i.ic||'')+' '+i.n),
     oggetti:(s.items||[]).filter(i=>!i.veh).length,partner:s.partner?(s.partner.nome||s.partner.n||'Sì'):(s.married?'Sposato':'—'),figli:(s.kids||[]).length,animali:(s.pets||[]).length,
     patenti:Object.entries(s.lic||{}).filter(x=>x[1]).map(x=>x[0].toUpperCase()).join(', ')||'Nessuna',diploma:s.diploma?'Sì':'No',laurea:s.laurea?'Sì':'No',amici:s.friends||0,multe:s.multe||0}}
@@ -54,13 +54,13 @@ function draw(){const q=($('#q').value||'').toLowerCase(),o=$('#o').value,now=Da
   rows.forEach(r=>r._i=r._i||info(r));
   let L=rows.filter(r=>!q||(r.nome+' '+r.email+' '+r._i.nome+' '+r._i.citta).toLowerCase().includes(q));
   L.sort(o==='soldi'?(a,b)=>b._i.tot-a._i.tot:o==='eta'?(a,b)=>(b._i.eta||0)-(a._i.eta||0):o==='nuovi'?(a,b)=>ms(b.creato)-ms(a.creato):(a,b)=>ms(b.ultimo)-ms(a.ultimo));
-  $('#kp').innerHTML=`<div><b>${rows.length}</b><small>👥 Account</small></div><div><b>${rows.filter(r=>now-ms(r.ultimo)<600000).length}</b><small>🟢 Giocano adesso</small></div><div><b>${rows.filter(r=>now-ms(r.ultimo)<day).length}</b><small>📅 Oggi</small></div><div><b>${rows.filter(r=>now-ms(r.creato)<7*day).length}</b><small>✨ Nuovi in 7 giorni</small></div>`;
+  $('#kp').innerHTML=`<div><b>${rows.length}</b><small>👥 Account</small></div><div><b>${rows.filter(r=>now-ms(r.ultimo)<600000).length}</b><small>🟢 Giocano adesso</small></div><div><b>${rows.filter(r=>now-ms(r.ultimo)<day).length}</b><small>📅 Oggi</small></div><div><b>${rows.filter(r=>now-ms(r.creato)<7*day).length}</b><small>✨ Nuovi in 7 giorni</small></div><div id="kc" style="cursor:pointer"><b>${codiceList().reduce((a,x)=>a+x.c,0)}</b><small>🤫 Codice segreto · tocca</small></div>${nomi.length?`<div><b>${nomi.filter(x=>x.tipo!=='nessuno').length}</b><small>📛 Nomi presi</small></div>`:''}`;$('#kc').onclick=codice;
   $('#ls').innerHTML=L.map(r=>{const i=r._i,on=now-ms(r.ultimo)<600000;return `<button class="it" data-id="${r.id}"><span class="av">${esc((r.nome||'?')[0].toUpperCase())}</span><span style="min-width:0"><b><span class="dot ${on?'on':''}"></span>${esc(r.nome)}</b><small>${r.accesso==='Google'?'🟦 Google':'✉️ Email'} · ${esc(r.email)}</small><small>${i.eta!=null?`🎂 ${i.eta} anni · `:''}${esc(i.fa)}${i.citta?' · '+esc(i.citta):''}${i.vivo===false?' · 🕊️ vita finita':''}</small></span><span class="r"><b class="${i.tot<0?'neg':''}">${eur(i.tot)}</b><small>${ago(r.ultimo)}</small></span></button>`}).join('')||'<div class="empty">Ancora nessun account. Quando qualcuno si registra nel gioco, compare qui da solo.</div>';
   document.querySelectorAll('.it').forEach(b=>b.onclick=()=>det(b.dataset.id))}
 function det(id){const r=rows.find(x=>x.id===id);if(!r)return;const i=r._i,st=i.st||{},S=[['😊 Felicità','fel'],['❤️ Salute','sal'],['🧠 Intelligenza','int'],['🤝 Simpatia','sim'],['⚽ Sport','spo']];
   const m=document.createElement('div');m.className='md';m.innerHTML=`<div class="sh"><div style="display:flex;justify-content:space-between;gap:10px"><div><h2>${esc(r.nome)}</h2><div class="sub">${esc(r.email)} · <span class="chip">${esc(r.accesso||'')}</span></div></div><button id="x" style="align-self:flex-start">✕</button></div>
    <div class="acc9"><small style="color:var(--soft);font-weight:800">👤 IL SUO ACCOUNT</small><div class="gr" style="margin:6px 0 0"><div><small>Nome dell'account</small><b>${esc(r.nome)}</b></div><div><small>Entra con</small><b>${r.accesso==='Google'?'🟦 Account Google':'✉️ Email e password'}</b></div>
-   <div style="grid-column:1/-1"><small>Email dell'account</small><b style="word-break:break-all">${esc(r.email||'—')}</b></div><div><small>Codice account</small><b>${esc(r.id.slice(0,8))}</b></div><div><small>${r.modAdmin?'✏️ Modificato da te':''}</small><b>${r.modAdmin?dt(r.modAdmin):''}</b></div></div></div>
+   <div style="grid-column:1/-1"><small>Email dell'account</small><b style="word-break:break-all">${esc(r.email||'—')}</b></div><div><small>Codice account</small><b>${esc(r.id.slice(0,8))}</b></div><div><small>${r.modAdmin?'✏️ Modificato da te':''}</small><b>${r.modAdmin?dt(r.modAdmin):''}</b></div><div><small>🤫 Codice segreto</small><b>${r.codiceN?r.codiceN+(r.codiceN===1?' volta':' volte'):'Mai usato'}</b></div></div>${pend(r)?'<p class="sub" style="margin:8px 0 0">⏳ Le tue modifiche arrivano nella sua partita appena entra a giocare.</p>':''}</div>
    <div class="gr"><div><small>Iscritto</small><b>${dt(r.creato)}</b></div><div><small>Ultima volta</small><b>${ago(r.ultimo)}</b></div></div>
    <h3 style="margin:14px 0 4px">🧍 ${esc(i.nome)}</h3><div class="sub">${i.sesso==='f'?'Bambina/donna':i.sesso==='m'?'Bambino/uomo':''} ${i.citta?'· '+esc(i.citta):''} ${i.vivo===false?'· 🕊️ vita finita':''}</div>
    <div class="gr"><div><small>🎂 Età nel gioco</small><b>${i.eta!=null?i.eta+' anni':'—'}</b></div><div><small>🎒 Cosa fa</small><b>${esc(i.fa)}</b></div>
@@ -76,27 +76,49 @@ function det(id){const r=rows.find(x=>x.id===id);if(!r)return;const i=r._i,st=i.
   const eb=m.querySelector('#ed');if(eb)eb.onclick=()=>{eb.hidden=true;edit(r,m.querySelector('#edf'),m)}}
 // solo l'amministratrice può modificare gli account (lo controllano anche le regole di Firebase)
 const ADMIN='piemastro13@gmail.com',ADM=()=>!!(A.currentUser&&A.currentUser.email===ADMIN);
-function edit(r,box,m){let s=null;try{s=r.salvataggio?JSON.parse(r.salvataggio):null}catch(e){}const st=(s&&s.st)||{},n=k=>s&&typeof s[k]==='number'?Math.round(s[k]):'';
+const LICS=[['am','🛵 Patentino'],['a','🏍️ Moto (A)'],['b','🚗 Auto (B)'],['c','🚚 Camion (C)'],['d','🚌 Autobus (D)'],['pilota','✈️ Pilota']];
+const pend=r=>r.modifica&&ms(r.modAdmin)>ms(r.modApplicata)?r.modifica:null;
+function edit(r,box,m){let s=null;try{s=r.salvataggio?JSON.parse(r.salvataggio):null}catch(e){}const P0=pend(r)||{};if(s){s=Object.assign(s,P0,{st:Object.assign({},s.st||{},P0.st||{}),lic:Object.assign({},s.lic||{},P0.lic||{})})}
+  const st=(s&&s.st)||{},n=k=>s&&typeof s[k]==='number'?Math.round(s[k]):'';const age0=s?(P0.age!=null?P0.age:s.age):null;
   const SL=[['😊 Felicità','fel'],['❤️ Salute','sal'],['🧠 Intelligenza','int'],['🤝 Simpatia','sim'],['⚽ Sport','spo']];
   box.className='ed';box.innerHTML=`<label>Nome dell'account</label><input id="e_acc" maxlength="40" value="${esc(r.nome||'')}">
    ${s?`<div class="row2"><div><label>Nome del personaggio</label><input id="e_nm" maxlength="30" value="${esc(s.name||'')}"></div><div><label>Cognome</label><input id="e_sn" maxlength="30" value="${esc(s.surname||'')}"></div></div>
-   <div class="row2"><div><label>💵 Soldi in tasca (€)</label><input id="e_mo" type="number" inputmode="numeric" value="${n('money')}"></div><div><label>🏦 Soldi in banca (€)</label><input id="e_ba" type="number" inputmode="numeric" value="${n('bank')}" ${s.bank==null?'disabled placeholder="Nessun conto"':''}></div></div>
+   <div class="row2"><div><label>🎂 Età (0-110 anni)</label><input id="e_age" type="number" min="0" max="110" inputmode="numeric" value="${age0!=null?age0:''}" ${s.alive===false?'disabled':''}></div><div><label>🧍 Maschio o femmina</label><select id="e_sex"><option value="m" ${s.sex!=='f'?'selected':''}>Maschio</option><option value="f" ${s.sex==='f'?'selected':''}>Femmina</option></select></div></div>
+   <div class="row2"><div><label>💵 Soldi in tasca (€)</label><input id="e_mo" type="number" inputmode="numeric" value="${n('money')}"></div><div><label>🏦 Soldi in banca (€)</label><input id="e_ba" type="number" inputmode="numeric" value="${s.bank!=null?n('bank'):''}" ${s.bank==null?'disabled placeholder="Nessun conto"':''}><label style="display:flex;gap:6px;align-items:center;margin-top:4px;font-weight:600"><input type="checkbox" id="e_bk" style="width:auto" ${s.bank!=null?'checked':''}> Ha il conto in banca</label></div></div>
+   <div class="row2"><div><label>👮 Multe</label><input id="e_mu" type="number" min="0" inputmode="numeric" value="${n('multe')||0}"></div><div><label>⚡ Energia (0-12)</label><input id="e_en" type="number" min="0" max="12" inputmode="numeric" value="${n('energy')}"></div></div>
+   <label>🪪 Patenti</label><div style="display:flex;flex-wrap:wrap;gap:6px 14px;margin:4px 0 6px">${LICS.map(([k,t])=>`<label style="display:flex;gap:6px;align-items:center;font-weight:600;margin:0"><input type="checkbox" data-lic="${k}" style="width:auto" ${s.lic&&s.lic[k]?'checked':''}> ${t}</label>`).join('')}</div>
    <div class="row2">${SL.map(([t,k])=>`<div><label>${t} (0-100)</label><input id="e_${k}" type="number" min="0" max="100" value="${Math.round(st[k]||0)}"></div>`).join('')}</div>`:'<p class="sub">Questo account non ha ancora una partita salvata: puoi cambiare solo il nome.</p>'}
    <div style="display:flex;gap:8px;margin-top:12px"><button id="e_ok" class="p" style="flex:1">💾 Salva le modifiche</button><button id="e_no">Annulla</button></div><p id="e_msg" class="sub"></p>`;
+  const bk=box.querySelector('#e_bk');if(bk)bk.onchange=()=>{const i=box.querySelector('#e_ba');i.disabled=!bk.checked;i.placeholder=bk.checked?'':'Nessun conto';if(bk.checked&&i.value==='')i.value='0'};
   box.querySelector('#e_no').onclick=()=>{box.innerHTML='';m.querySelector('#ed').hidden=false};
   box.querySelector('#e_ok').onclick=async()=>{const v=id=>{const e=box.querySelector('#'+id);return e?e.value:null},num=id=>{const x=v(id);return x===null||x===''||isNaN(+x)?null:Math.round(+x)},msg=box.querySelector('#e_msg');
     const nome=(v('e_acc')||'').trim()||r.nome,F=firebase.firestore.FieldValue,up={nome,nomeFisso:nome!==r.nome||!!r.nomeFisso};
-    if(s){const mod={};const nm=(v('e_nm')||'').trim(),sn=(v('e_sn')||'').trim(),mo=num('e_mo'),ba=num('e_ba');
-      if(nm&&nm!==s.name){mod.name=nm;s.name=nm}if(sn!==(s.surname||'')){mod.surname=sn;s.surname=sn}if(mo!==null&&mo!==Math.round(s.money||0)){mod.money=mo;s.money=mo}if(ba!==null&&s.bank!=null&&ba!==Math.round(s.bank)){mod.bank=ba;s.bank=ba}
-      const ms2={};SL.forEach(([t,k])=>{const x=num('e_'+k);if(x!==null&&x!==Math.round(st[k]||0)){ms2[k]=Math.max(0,Math.min(100,x));st[k]=ms2[k]}});if(Object.keys(ms2).length){mod.st=ms2;s.st=st}
-      if(Object.keys(mod).length){up.modifica=mod;up.modAdmin=F.serverTimestamp();up.salvataggio=JSON.stringify(s);
-        up.personaggio=Object.assign({},r.personaggio||{},{nome:(s.name||'')+' '+(s.surname||''),soldi:Math.round((s.money||0)+(s.bank||0))})}}
-    msg.textContent='⏳ Salvo…';try{await D.collection('utenti').doc(r.id).update(up);msg.innerHTML='<span class="ok">✅ Fatto! Se sta giocando, la sua partita si aggiorna subito.</span>';setTimeout(()=>m.remove(),1400)}
+    if(s){const mod=Object.assign({},P0);const nm=(v('e_nm')||'').trim(),sn=(v('e_sn')||'').trim(),mo=num('e_mo'),ba=num('e_ba'),ag=num('e_age'),mu=num('e_mu'),en=num('e_en'),sx=v('e_sex');
+      if(nm&&nm!==s.name){mod.name=nm;s.name=nm}if(sn!==(s.surname||'')){mod.surname=sn;s.surname=sn}if(mo!==null&&mo!==Math.round(s.money||0)){mod.money=mo;s.money=mo}
+      if(bk&&!bk.checked){if(s.bank!=null){mod.bank=null;s.bank=null}}else if(ba!==null&&(s.bank==null||ba!==Math.round(s.bank))){mod.bank=ba;s.bank=ba}
+      if(ag!==null&&s.alive!==false&&ag!==age0){mod.age=Math.max(0,Math.min(110,ag))}
+      if(sx&&sx!==(s.sex||'m')){mod.sex=sx;s.sex=sx}if(mu!==null&&mu!==Math.round(s.multe||0)){mod.multe=Math.max(0,mu);s.multe=mod.multe}if(en!==null&&en!==Math.round(s.energy||0)){mod.energy=Math.max(0,Math.min(12,en));s.energy=mod.energy}
+      const lc=Object.assign({},P0.lic||{});let lch=0;box.querySelectorAll('[data-lic]').forEach(c=>{const k=c.dataset.lic;if(!!c.checked!==!!(s.lic&&s.lic[k])){lc[k]=!!c.checked;lch=1;s.lic=s.lic||{};s.lic[k]=!!c.checked}});if(lch||P0.lic)mod.lic=lc;
+      const ms2=Object.assign({},P0.st||{});SL.forEach(([t,k])=>{const x=num('e_'+k);if(x!==null&&x!==Math.round(st[k]||0)){ms2[k]=Math.max(0,Math.min(100,x));st[k]=ms2[k]}});if(Object.keys(ms2).length){mod.st=ms2;s.st=st}
+      if(Object.keys(mod).length){up.modifica=mod;up.modAdmin=F.serverTimestamp();const sv=Object.assign({},s);if(r.salvataggio){try{sv.age=JSON.parse(r.salvataggio).age}catch(e){}}up.salvataggio=JSON.stringify(sv);
+        up.personaggio=Object.assign({},r.personaggio||{},{nome:(s.name||'')+' '+(s.surname||''),soldi:Math.round((s.money||0)+(s.bank||0))},mod.age!=null?{eta:mod.age}:{})}}
+    msg.textContent='⏳ Salvo…';try{await D.collection('utenti').doc(r.id).update(up);r._i=null;msg.innerHTML='<span class="ok">✅ Fatto! Se sta giocando, la sua partita si aggiorna subito. Se non sta giocando, si aggiorna appena entra.</span>';setTimeout(()=>m.remove(),1800)}
     catch(e){msg.innerHTML='<span style="color:var(--bad)">'+(e&&e.code==='permission-denied'?'Firebase non ti lascia ancora modificare: prima va aggiornata una regola in Firebase (te l\'ha spiegato Claude).':'Non sono riuscita a salvare: '+esc(e&&e.message||e))+'</span>'}}}
-A.onAuthStateChanged(u=>{if(unsub){unsub();unsub=null}if(!u)return login();
+// il codice segreto: chi lo ha usato e quante volte
+let nomi=[],nomiErr=0,unsubN=null;
+function codiceList(){const L=[];rows.forEach(r=>{if(r.codiceN>0)L.push({n:r.nome,t:r.accesso==='Google'?'🟦 Google':'✉️ Email',c:r.codiceN,u:r.codiceUltimo,id:r.id})});
+  nomi.forEach(x=>{if(x.codice>0)L.push({n:x.nome||x.id,t:x.tipo==='nessuno'?'👻 Senza account':'📱 Account sul dispositivo',c:x.codice,u:x.codiceUltimo})});return L.sort((a,b)=>b.c-a.c)}
+function codice(){const L=codiceList(),tot=L.reduce((a,x)=>a+x.c,0),m=document.createElement('div');m.className='md';
+  m.innerHTML=`<div class="sh"><div style="display:flex;justify-content:space-between;gap:10px"><div><h2>🤫 Il codice segreto</h2><div class="sub">Chi l'ha scritto nella chat di Viola, e quante volte</div></div><button id="x" style="align-self:flex-start">✕</button></div>
+   <div class="gr"><div><small>👥 Persone</small><b>${L.length}</b></div><div><small>🔢 Volte in tutto</small><b>${tot}</b></div></div>
+   ${L.length?`<div class="list">${L.map(x=>`<div class="it" ${x.id?`data-id="${x.id}"`:''} style="cursor:${x.id?'pointer':'default'}"><span class="av">${esc((x.n||'?')[0].toUpperCase())}</span><span style="min-width:0"><b>${esc(x.n)}</b><small>${x.t} · ultima volta ${ago(x.u)}</small></span><span class="r"><b>${x.c}</b><small>${x.c===1?'volta':'volte'}</small></span></div>`).join('')}</div>`:'<div class="empty">Ancora nessuno ha usato il codice segreto.</div>'}
+   ${nomiErr?'<p class="sub">⚠️ Per vedere anche chi gioca senza account online va aggiornata la regola «nomi» in Firebase.</p>':''}<p class="sub">Si conta da quando c'è questa novità (novembre 2026).</p></div>`;
+  document.body.appendChild(m);m.onclick=e=>{if(e.target===m)m.remove()};m.querySelector('#x').onclick=()=>m.remove();m.querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>{m.remove();det(b.dataset.id)})}
+A.onAuthStateChanged(u=>{if(unsub){unsub();unsub=null}if(unsubN){unsubN();unsubN=null}if(!u)return login();
   app.innerHTML=`<div class="kp" id="kp"></div><div class="bar"><input id="q" placeholder="🔍 Cerca nome, email o città"><select id="o"><option value="ultimo">Giocato di recente</option><option value="nuovi">Nuovi iscritti</option><option value="soldi">Più soldi</option><option value="eta">Più grandi</option></select></div><div class="list" id="ls"></div>
    <p style="color:var(--soft);font-size:13px;margin-top:18px">Entrata come ${esc(u.email)} · <a href="#" id="out" style="color:var(--acc)">esci</a><br>📲 Per averla come app: sul telefono apri il menu del browser e premi "Aggiungi a schermata Home".</p>`;
-  $('#out').onclick=e=>{e.preventDefault();A.signOut()};$('#q').oninput=draw;$('#o').onchange=draw;
+  $('#out').onclick=e=>{e.preventDefault();A.signOut()};if(unsubN){unsubN();unsubN=null}nomiErr=0;
+  if(ADM())unsubN=D.collection('nomi').onSnapshot(s=>{nomi=s.docs.map(d=>({id:d.id,...d.data()}));if($('#ls'))draw()},()=>{nomiErr=1});$('#q').oninput=draw;$('#o').onchange=draw;
   unsub=D.collection('utenti').onSnapshot(s=>{rows=s.docs.map(d=>({id:d.id,...d.data()}));$('#lv').hidden=false;draw()},
     e=>{$('#lv').hidden=true;app.innerHTML=`<div class="card"><p class="err">Non hai il permesso di vedere gli account.</p><p>Sei entrata come <b>${esc(u.email)}</b>. Devi entrare con <b>piemastro13@gmail.com</b>.</p><button id="o2">Esci e cambia account</button></div>`;$('#o2').onclick=()=>A.signOut()})});
 setInterval(()=>{if(rows.length&&$('#ls'))draw()},60000);

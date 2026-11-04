@@ -1,8 +1,8 @@
 /* ================= v9: account online (Firebase): Google o email e password ================= */
 const FB9CFG={apiKey:"AIzaSyBJRUlGK_ArYn2K_pJ0ePChTUC3gkikwgY",authDomain:"gioco-della-vita-pm.firebaseapp.com",projectId:"gioco-della-vita-pm",storageBucket:"gioco-della-vita-pm.firebasestorage.app",messagingSenderId:"83815479634",appId:"1:83815479634:web:86220d0844b898c5e1628b"};
 const OL9={user:null,p:null,t:0,busy:0,err:''};
-function cl9Js(u){return new Promise((ok,ko)=>{const s=document.createElement('script');s.src=u;s.onload=ok;s.onerror=ko;document.head.appendChild(s)})}
-function cl9Load(){if(OL9.p)return OL9.p;OL9.p=(async()=>{if(!window.firebase||!firebase.firestore){for(const f of ['app','auth','firestore']){try{await cl9Js('fb/firebase-'+f+'-compat.js')}catch(e){await cl9Js('https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-'+f+'-compat.js')}}}
+function cl9Js(u){return new Promise((ok,ko)=>{const s=document.createElement('script');s.async=false;s.src=u;s.onload=ok;s.onerror=ko;document.head.appendChild(s)})}
+function cl9Load(){if(OL9.p)return OL9.p;OL9.p=(async()=>{if(!window.firebase||!firebase.firestore){try{await Promise.all(['app','auth','firestore'].map(f=>cl9Js('fb/firebase-'+f+'-compat.js')))}catch(e){for(const f of ['app','auth','firestore']){if(f==='app'&&window.firebase)continue;if(f!=='app'&&window.firebase&&firebase[f])continue;await cl9Js('https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-'+f+'-compat.js')}}}
     if(!firebase.apps.length)firebase.initializeApp(FB9CFG);OL9.auth=firebase.auth();OL9.db=firebase.firestore();
     try{const rr=await OL9.auth.getRedirectResult();if(rr&&rr.user){OL9.user=rr.user;await cl9After(rr.user)}}catch(e){}
     await new Promise(r=>{let d=0;OL9.auth.onAuthStateChanged(u=>{OL9.user=u;cl9Ui();if(!d){d=1;r()}})});return OL9})();
@@ -18,7 +18,7 @@ async function cl9Push(force,raw,old){const u=OL9.user;if(!u||!OL9.db)return;con
   if(raw&&raw.length<900000)data.salvataggio=raw;if(old===null)data.creato=F.serverTimestamp();if(OL9.fix)delete data.nome;
   try{await OL9.db.collection('utenti').doc(u.uid).set(data,{merge:true});localStorage.setItem('vita_cl9t_'+u.uid,String(Date.now()))}catch(e){console.warn('cl9 push',e)}}
 // dopo l'accesso: prende la partita online, oppure porta online quella di adesso
-async function cl9After(u){try{localStorage.setItem('vita_cl9','1')}catch(e){}let d;try{const g=await OL9.db.collection('utenti').doc(u.uid).get();d=g.exists?g.data():null}catch(e){d=undefined}try{if(d&&d.modAdmin&&d.modAdmin.toMillis)localStorage.setItem('vita_cl9m_'+u.uid,String(d.modAdmin.toMillis()));if(d)OL9.fix=!!d.nomeFisso}catch(e){}
+async function cl9After(u){try{localStorage.setItem('vita_cl9','1')}catch(e){}let d;try{const g=await OL9.db.collection('utenti').doc(u.uid).get();d=g.exists?g.data():null}catch(e){d=undefined}try{if(d)OL9.fix=!!d.nomeFisso}catch(e){}
   const id=cl9Id(u),o=ACC9.d();ACC9.stash();let a=o.list.find(x=>x.id===id);if(!a){a={id,n:cl9Nm(u),ic:'☁️',t:Date.now(),fb:1};o.list.push(a)}else a.n=cl9Nm(u);
   let raw=(d&&d.salvataggio)||localStorage.getItem('vita_sv9_'+id)||localStorage.getItem(LS)||null;o.cur=id;ACC9.w(o);
   try{if(raw)localStorage.setItem(LS,raw);else localStorage.removeItem(LS)}catch(e){}
@@ -76,11 +76,17 @@ try{if(localStorage.getItem('vita_cl9')==='1'||/apiKey=|mode=/.test(location.sea
   try{const g=await OL9.db.collection('utenti').doc(u.uid).get();const d=g.exists?g.data():null;const loc=+localStorage.getItem('vita_cl9t_'+u.uid)||0,rem=d&&d.ultimo&&d.ultimo.toMillis?d.ultimo.toMillis():0;
     if(d&&d.salvataggio&&rem>loc+8000&&d.salvataggio!==localStorage.getItem(LS)){localStorage.setItem(LS,d.salvataggio);localStorage.setItem('vita_cl9t_'+u.uid,String(rem));toast('☁️ Carico la partita che hai giocato su un altro dispositivo…');acc9Go()}}catch(e){}}).catch(()=>{})}catch(e){}
 
-// modifiche fatte dall'amministratrice nell'app degli account: arrivano subito nella partita (soldi, nome, statistiche)
-function cl9Apply(d,u){try{if(!d)return;OL9.fix=!!d.nomeFisso;if(!d.modifica||!d.modAdmin||!d.modAdmin.toMillis)return;const t=d.modAdmin.toMillis(),k='vita_cl9m_'+u.uid,seen=+localStorage.getItem(k)||0;if(t<=seen)return;
-  if(!S||ACC9.d().cur!==cl9Id(u))return;const m=d.modifica;
-  if(typeof m.money==='number')S.money=Math.round(m.money);if(typeof m.bank==='number'&&S.bank!=null)S.bank=Math.round(m.bank);if(m.name)S.name=String(m.name).slice(0,30);if(m.surname!=null)S.surname=String(m.surname).slice(0,30);
+// modifiche fatte dall'amministratrice nell'app degli account: arrivano subito nella partita (età, soldi, nome, patenti, statistiche…)
+function cl9Apply(d,u){try{if(!d)return;OL9.fix=!!d.nomeFisso;if(!d.modifica||!d.modAdmin||!d.modAdmin.toMillis)return;const t=d.modAdmin.toMillis(),k='vita_cl9m_'+u.uid,seen=+localStorage.getItem(k)||0,done=d.modApplicata&&d.modApplicata.toMillis?d.modApplicata.toMillis():0;
+  if(t<=seen||t<=done)return;if(!S||ACC9.d().cur!==cl9Id(u))return;const m=d.modifica;
+  if(typeof m.age==='number'&&m.age!==S.age&&m.age>=0&&m.age<=110&&S.alive){try{setAge(Math.round(m.age))}catch(e){S.age=Math.round(m.age)}}
+  if(m.sex==='m'||m.sex==='f')S.sex=m.sex;
+  if(typeof m.money==='number')S.money=Math.round(m.money);if(typeof m.bank==='number')S.bank=Math.round(m.bank);if(m.bank===null)S.bank=null;
+  if(m.name)S.name=String(m.name).slice(0,30);if(m.surname!=null)S.surname=String(m.surname).slice(0,30);
+  if(m.lic&&typeof m.lic==='object'){S.lic=S.lic||{};for(const x in m.lic)S.lic[x]=!!m.lic[x]}
+  if(typeof m.multe==='number')S.multe=Math.max(0,Math.round(m.multe));if(typeof m.energy==='number'&&typeof EN_MAX!=='undefined')S.energy=Math.max(0,Math.min(EN_MAX,m.energy));
   if(m.st&&S.st)for(const x in m.st)if(x in S.st)S.st[x]=Math.max(0,Math.min(100,+m.st[x]||0));
-  localStorage.setItem(k,String(t));updateHud();save();cl9Push(true);toast('✏️ La tua partita è stata aggiornata dall\'amministratrice del gioco.')}catch(e){console.warn('cl9 apply',e)}}
+  localStorage.setItem(k,String(t));updateHud();save();cl9Push(true);try{OL9.db.collection('utenti').doc(u.uid).set({modApplicata:d.modAdmin},{merge:true})}catch(e){}
+  toast('✏️ La tua partita è stata aggiornata dall\'amministratrice del gioco.')}catch(e){console.warn('cl9 apply',e)}}
 setInterval(()=>{try{const u=OL9.user;if(!u||!OL9.db){if(OL9.wu){OL9.wu();OL9.wu=null;OL9.wuid=null}return}if(OL9.wuid===u.uid)return;if(OL9.wu)OL9.wu();OL9.wuid=u.uid;
   OL9.wu=OL9.db.collection('utenti').doc(u.uid).onSnapshot(g=>cl9Apply(g.exists?g.data():null,u),()=>{})}catch(e){}},3000);

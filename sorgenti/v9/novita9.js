@@ -1,5 +1,8 @@
 /* ================= v9: le novità dell'aggiornamento del mese ================= */
-const NOV9={k:'2026-11b',t:'Altre novità di novembre',l:[
+const NOV9={k:'2026-11c',t:'Altre novità di novembre',l:[
+  ['📲','Installa l\'app','Il gioco si può installare come un\'app: trovi «Installa l\'app» nella pausa e in fondo alle Impostazioni.'],
+  ['📛','Nomi tutti diversi','Ogni account ha un nome solo suo: se il nome c\'è già, il gioco te ne propone uno simile.'],
+  ['⏸️','Account nella pausa','Nella pausa puoi cambiare account, aggiungerne uno o uscire.'],
   ['🏍️','Moto sulla strada','Moto, scooter, quad, trattori, furgoni, camion e autobus ora si guidano sulla strada, come la macchina. In curva la moto piega!'],
   ['🛣️','Strada ad anello','Le strade non finiscono più negli alberi: arrivano tutte a una grande strada con quattro curvoni che gira intorno alla città.'],
   ['🚕','Lavoro da tassista','Con la patente B ti puoi far assumere come tassista: ti danno il taxi giallo e ogni corsa ti paga.'],

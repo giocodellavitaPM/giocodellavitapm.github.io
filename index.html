@@ -1,4 +1,4 @@
-<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Gioco della Vita PM</title><meta name="description" content="Gioco della Vita PM: nasci, cresci, vai a scuola, lavora e vivi tutta la tua vita in una città enorme in 3D. Gioco gratis per bambini e ragazzi, da computer e telefono."><meta name="keywords" content="gioco della vita PM, gioco della vita, gioco vita città 3D, simulatore di vita"><meta property="og:title" content="Gioco della Vita PM"><meta property="og:description" content="Nasci, cresci e vivi tutta la tua vita in una città 3D."><meta name="theme-color" content="#07110c">
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Gioco della Vita PM</title><meta name="description" content="Gioco della Vita PM: nasci, cresci, vai a scuola, lavora e vivi tutta la tua vita in una città enorme in 3D. Gioco gratis per bambini e ragazzi, da computer e telefono."><meta name="keywords" content="gioco della vita PM, gioco della vita, gioco vita città 3D, simulatore di vita"><meta property="og:title" content="Gioco della Vita PM"><meta property="og:description" content="Nasci, cresci e vivi tutta la tua vita in una città 3D."><meta name="theme-color" content="#07110c"><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icona-192.png">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
@@ -8936,8 +8936,8 @@ PHX9.acc9={t:'👤 Account',h:()=>{const c=ACC9.cur();return `<div class="scr"><
 /* ================= v9: account online (Firebase): Google o email e password ================= */
 const FB9CFG={apiKey:"AIzaSyBJRUlGK_ArYn2K_pJ0ePChTUC3gkikwgY",authDomain:"gioco-della-vita-pm.firebaseapp.com",projectId:"gioco-della-vita-pm",storageBucket:"gioco-della-vita-pm.firebasestorage.app",messagingSenderId:"83815479634",appId:"1:83815479634:web:86220d0844b898c5e1628b"};
 const OL9={user:null,p:null,t:0,busy:0,err:''};
-function cl9Js(u){return new Promise((ok,ko)=>{const s=document.createElement('script');s.src=u;s.onload=ok;s.onerror=ko;document.head.appendChild(s)})}
-function cl9Load(){if(OL9.p)return OL9.p;OL9.p=(async()=>{if(!window.firebase||!firebase.firestore){for(const f of ['app','auth','firestore']){try{await cl9Js('fb/firebase-'+f+'-compat.js')}catch(e){await cl9Js('https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-'+f+'-compat.js')}}}
+function cl9Js(u){return new Promise((ok,ko)=>{const s=document.createElement('script');s.async=false;s.src=u;s.onload=ok;s.onerror=ko;document.head.appendChild(s)})}
+function cl9Load(){if(OL9.p)return OL9.p;OL9.p=(async()=>{if(!window.firebase||!firebase.firestore){try{await Promise.all(['app','auth','firestore'].map(f=>cl9Js('fb/firebase-'+f+'-compat.js')))}catch(e){for(const f of ['app','auth','firestore']){if(f==='app'&&window.firebase)continue;if(f!=='app'&&window.firebase&&firebase[f])continue;await cl9Js('https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-'+f+'-compat.js')}}}
     if(!firebase.apps.length)firebase.initializeApp(FB9CFG);OL9.auth=firebase.auth();OL9.db=firebase.firestore();
     try{const rr=await OL9.auth.getRedirectResult();if(rr&&rr.user){OL9.user=rr.user;await cl9After(rr.user)}}catch(e){}
     await new Promise(r=>{let d=0;OL9.auth.onAuthStateChanged(u=>{OL9.user=u;cl9Ui();if(!d){d=1;r()}})});return OL9})();
@@ -8953,7 +8953,7 @@ async function cl9Push(force,raw,old){const u=OL9.user;if(!u||!OL9.db)return;con
   if(raw&&raw.length<900000)data.salvataggio=raw;if(old===null)data.creato=F.serverTimestamp();if(OL9.fix)delete data.nome;
   try{await OL9.db.collection('utenti').doc(u.uid).set(data,{merge:true});localStorage.setItem('vita_cl9t_'+u.uid,String(Date.now()))}catch(e){console.warn('cl9 push',e)}}
 // dopo l'accesso: prende la partita online, oppure porta online quella di adesso
-async function cl9After(u){try{localStorage.setItem('vita_cl9','1')}catch(e){}let d;try{const g=await OL9.db.collection('utenti').doc(u.uid).get();d=g.exists?g.data():null}catch(e){d=undefined}try{if(d&&d.modAdmin&&d.modAdmin.toMillis)localStorage.setItem('vita_cl9m_'+u.uid,String(d.modAdmin.toMillis()));if(d)OL9.fix=!!d.nomeFisso}catch(e){}
+async function cl9After(u){try{localStorage.setItem('vita_cl9','1')}catch(e){}let d;try{const g=await OL9.db.collection('utenti').doc(u.uid).get();d=g.exists?g.data():null}catch(e){d=undefined}try{if(d)OL9.fix=!!d.nomeFisso}catch(e){}
   const id=cl9Id(u),o=ACC9.d();ACC9.stash();let a=o.list.find(x=>x.id===id);if(!a){a={id,n:cl9Nm(u),ic:'☁️',t:Date.now(),fb:1};o.list.push(a)}else a.n=cl9Nm(u);
   let raw=(d&&d.salvataggio)||localStorage.getItem('vita_sv9_'+id)||localStorage.getItem(LS)||null;o.cur=id;ACC9.w(o);
   try{if(raw)localStorage.setItem(LS,raw);else localStorage.removeItem(LS)}catch(e){}
@@ -9011,16 +9011,25 @@ try{if(localStorage.getItem('vita_cl9')==='1'||/apiKey=|mode=/.test(location.sea
   try{const g=await OL9.db.collection('utenti').doc(u.uid).get();const d=g.exists?g.data():null;const loc=+localStorage.getItem('vita_cl9t_'+u.uid)||0,rem=d&&d.ultimo&&d.ultimo.toMillis?d.ultimo.toMillis():0;
     if(d&&d.salvataggio&&rem>loc+8000&&d.salvataggio!==localStorage.getItem(LS)){localStorage.setItem(LS,d.salvataggio);localStorage.setItem('vita_cl9t_'+u.uid,String(rem));toast('☁️ Carico la partita che hai giocato su un altro dispositivo…');acc9Go()}}catch(e){}}).catch(()=>{})}catch(e){}
 
-// modifiche fatte dall'amministratrice nell'app degli account: arrivano subito nella partita (soldi, nome, statistiche)
-function cl9Apply(d,u){try{if(!d)return;OL9.fix=!!d.nomeFisso;if(!d.modifica||!d.modAdmin||!d.modAdmin.toMillis)return;const t=d.modAdmin.toMillis(),k='vita_cl9m_'+u.uid,seen=+localStorage.getItem(k)||0;if(t<=seen)return;
-  if(!S||ACC9.d().cur!==cl9Id(u))return;const m=d.modifica;
-  if(typeof m.money==='number')S.money=Math.round(m.money);if(typeof m.bank==='number'&&S.bank!=null)S.bank=Math.round(m.bank);if(m.name)S.name=String(m.name).slice(0,30);if(m.surname!=null)S.surname=String(m.surname).slice(0,30);
+// modifiche fatte dall'amministratrice nell'app degli account: arrivano subito nella partita (età, soldi, nome, patenti, statistiche…)
+function cl9Apply(d,u){try{if(!d)return;OL9.fix=!!d.nomeFisso;if(!d.modifica||!d.modAdmin||!d.modAdmin.toMillis)return;const t=d.modAdmin.toMillis(),k='vita_cl9m_'+u.uid,seen=+localStorage.getItem(k)||0,done=d.modApplicata&&d.modApplicata.toMillis?d.modApplicata.toMillis():0;
+  if(t<=seen||t<=done)return;if(!S||ACC9.d().cur!==cl9Id(u))return;const m=d.modifica;
+  if(typeof m.age==='number'&&m.age!==S.age&&m.age>=0&&m.age<=110&&S.alive){try{setAge(Math.round(m.age))}catch(e){S.age=Math.round(m.age)}}
+  if(m.sex==='m'||m.sex==='f')S.sex=m.sex;
+  if(typeof m.money==='number')S.money=Math.round(m.money);if(typeof m.bank==='number')S.bank=Math.round(m.bank);if(m.bank===null)S.bank=null;
+  if(m.name)S.name=String(m.name).slice(0,30);if(m.surname!=null)S.surname=String(m.surname).slice(0,30);
+  if(m.lic&&typeof m.lic==='object'){S.lic=S.lic||{};for(const x in m.lic)S.lic[x]=!!m.lic[x]}
+  if(typeof m.multe==='number')S.multe=Math.max(0,Math.round(m.multe));if(typeof m.energy==='number'&&typeof EN_MAX!=='undefined')S.energy=Math.max(0,Math.min(EN_MAX,m.energy));
   if(m.st&&S.st)for(const x in m.st)if(x in S.st)S.st[x]=Math.max(0,Math.min(100,+m.st[x]||0));
-  localStorage.setItem(k,String(t));updateHud();save();cl9Push(true);toast('✏️ La tua partita è stata aggiornata dall\'amministratrice del gioco.')}catch(e){console.warn('cl9 apply',e)}}
+  localStorage.setItem(k,String(t));updateHud();save();cl9Push(true);try{OL9.db.collection('utenti').doc(u.uid).set({modApplicata:d.modAdmin},{merge:true})}catch(e){}
+  toast('✏️ La tua partita è stata aggiornata dall\'amministratrice del gioco.')}catch(e){console.warn('cl9 apply',e)}}
 setInterval(()=>{try{const u=OL9.user;if(!u||!OL9.db){if(OL9.wu){OL9.wu();OL9.wu=null;OL9.wuid=null}return}if(OL9.wuid===u.uid)return;if(OL9.wu)OL9.wu();OL9.wuid=u.uid;
   OL9.wu=OL9.db.collection('utenti').doc(u.uid).onSnapshot(g=>cl9Apply(g.exists?g.data():null,u),()=>{})}catch(e){}},3000);
 /* ================= v9: le novità dell'aggiornamento del mese ================= */
-const NOV9={k:'2026-11b',t:'Altre novità di novembre',l:[
+const NOV9={k:'2026-11c',t:'Altre novità di novembre',l:[
+  ['📲','Installa l\'app','Il gioco si può installare come un\'app: trovi «Installa l\'app» nella pausa e in fondo alle Impostazioni.'],
+  ['📛','Nomi tutti diversi','Ogni account ha un nome solo suo: se il nome c\'è già, il gioco te ne propone uno simile.'],
+  ['⏸️','Account nella pausa','Nella pausa puoi cambiare account, aggiungerne uno o uscire.'],
   ['🏍️','Moto sulla strada','Moto, scooter, quad, trattori, furgoni, camion e autobus ora si guidano sulla strada, come la macchina. In curva la moto piega!'],
   ['🛣️','Strada ad anello','Le strade non finiscono più negli alberi: arrivano tutte a una grande strada con quattro curvoni che gira intorno alla città.'],
   ['🚕','Lavoro da tassista','Con la patente B ti puoi far assumere come tassista: ti danno il taxi giallo e ogni corsa ti paga.'],
@@ -9231,6 +9240,85 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-gowork9="j
 {const _t=txTick;txTick=function(dt){if(isTassista9()&&inTaxi9()&&!TX9.p&&!TX9.go&&TX9.cd>8)TX9.cd=8;return _t.apply(this,arguments)}}
 // sul taxi c'è la scritta TAXI anche in 2D
 {const _d=drawCarAt;drawCarAt=function(x,y,ang,col,stop,sh){const r=_d.apply(this,arguments);try{if(col==='#f2c21a'&&sh==='city'){const c=cx;c.save();c.translate(x*T,y*T);c.rotate(ang);c.fillStyle='#fffbe8';rr(c,-7,-4.5,12,9,2);c.fill();c.fillStyle='#1f2540';c.font='800 6px system-ui';c.textAlign='center';c.textBaseline='middle';c.rotate(Math.PI/2);c.fillText('TAXI',0,1);c.restore()}}catch(e){}return r}}
+/* ================= v9: nomi degli account tutti diversi, il codice segreto contato, l'account nella pausa, pulsanti più pronti, installa l'app ================= */
+// ---------- nomi unici: se "Gianni" c'è già, ti propone "Gianni.13" ----------
+const nm9Key=n=>String(n||'').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9._-]+/g,'').slice(0,40);
+const nm9Ok=()=>!navigator.webdriver||window.NM9T;
+const nm9T=(pr,ms)=>Promise.race([pr,new Promise((_,ko)=>setTimeout(()=>ko(new Error('lento')),ms))]);
+function nm9Db(){return nm9T(cl9Load().then(o=>o.db||OL9.db),6000)}
+async function nm9Free(n){const k=nm9Key(n);if(!k)return {ok:false,k};try{const db=await nm9Db();const g=await nm9T(db.collection('nomi').doc(k).get(),5000);return {ok:!g.exists,k}}catch(e){return {ok:true,k,off:1}}}
+async function nm9Suggest(n){const base=String(n).trim().slice(0,14);for(let i=0;i<5;i++){const s=base+'.'+(2+Math.floor(Math.random()*98));const r=await nm9Free(s);if(r.ok)return s}return base+'.'+(100+Math.floor(Math.random()*900))}
+async function nm9Take(n,tipo,uid){const k=nm9Key(n);if(!k)return {k:null};try{const db=await nm9Db();const d={nome:String(n).trim().slice(0,30),tipo,creato:firebase.firestore.FieldValue.serverTimestamp()};if(uid)d.uid=uid;await nm9T(db.collection('nomi').doc(k).set(d),5000);return {k}}
+  catch(e){return {k:null,taken:e&&e.code==='permission-denied'}}}
+function nm9Busy(on){document.querySelectorAll('[data-acc-add],[data-cl9do="reg"]').forEach(b=>{b.disabled=!!on;b.style.opacity=on?.6:''})}
+async function nm9Check(name){const r=await nm9Free(name);if(r.ok)return r.off?'off':true;const sug=await nm9Suggest(name);
+  toast(`🙈 Il nome «${String(name).trim()}» c'è già: l'ha preso un altro giocatore. Prova con «${sug}»!`);
+  document.querySelectorAll('#acc9nm,[data-cl9nm]').forEach(i=>{if(i.value.trim()&&nm9Key(i.value)===nm9Key(name))i.value=sug});return false}
+// account solo su questo dispositivo
+{const _add=ACC9.add;ACC9.add=function(name,ic){const nm=String(name||'').trim().slice(0,18);if(!nm||!nm9Ok()||ACC9._nm9)return _add.apply(this,arguments);
+  nm9Busy(1);(async()=>{try{const ck=await nm9Check(nm);if(!ck)return;const t=ck==='off'?{k:null}:await nm9Take(nm,'locale');if(!t.k&&t.taken){await nm9Check(nm);return}
+      ACC9._nm9=1;let a;try{a=_add.call(ACC9,nm,ic)}finally{ACC9._nm9=0}
+      if(a&&t.k){const o=ACC9.d(),x=o.list.find(z=>z.id===a.id);if(x){x.reg=t.k;ACC9.w(o)}}
+      if(a&&!acc9Busy){const box=$('acc9st');if(box)acc9Start(box);if(ui.ph9&&typeof phRender==='function')phRender();const w=$('acc9w');if(w&&w.dataset.p9)acc9Pausa()}}
+    finally{nm9Busy(0)}})();return null}}
+// account online con email: il nome deve essere libero
+{const _do=cl9Do;cl9Do=async function(kind,root){if(kind!=='reg'||!nm9Ok())return _do.apply(this,arguments);
+  const q=s=>root.querySelector(s),nm=((q('[data-cl9nm]')||{}).value||'').trim(),ok=q('[data-cl9ok]');if(!nm||(ok&&!ok.checked))return _do.apply(this,arguments);
+  nm9Busy(1);try{const ck=await nm9Check(nm);if(!ck)return;const t=ck==='off'?{k:null}:await nm9Take(nm,'online');if(!t.k&&t.taken){await nm9Check(nm);return}}finally{nm9Busy(0)}
+  return _do.apply(this,arguments)}}
+// gli account di prima: se il loro nome è ancora libero lo prenotano
+setTimeout(async()=>{if(!nm9Ok()||!navigator.onLine)return;try{const o=ACC9.d();let ch=0;for(const a of o.list){if(a.fb||a.reg)continue;const r=await nm9Free(a.n);if(r.off)return;if(r.ok){const t=await nm9Take(a.n,'locale');a.reg=t.k||'-'}else a.reg='-';ch=1}
+  if(ch){const o2=ACC9.d();o.list.forEach(a=>{const x=o2.list.find(z=>z.id===a.id);if(x&&a.reg)x.reg=a.reg});ACC9.w(o2)}}catch(e){}},9000);
+
+// ---------- il codice segreto: si conta chi lo usa e quante volte (lo vede l'amministratrice) ----------
+function cd9Track(){try{S.codice9=(S.codice9||0)+1;save();if(!nm9Ok())return;const c=ACC9.cur();
+  nm9Db().then(db=>{const F=firebase.firestore.FieldValue,inc=F.increment(1),ts=F.serverTimestamp();
+    if(c&&c.fb&&OL9.user)return db.collection('utenti').doc(OL9.user.uid).set({codiceN:inc,codiceUltimo:ts},{merge:true});
+    const k=c&&c.reg&&c.reg!=='-'?c.reg:c?nm9Key(c.n)+'~'+(c.id||'').slice(-5):'~anonimi';
+    return db.collection('nomi').doc(k).set({nome:c?c.n:'Chi gioca senza account',tipo:c?'locale':'nessuno',codice:inc,codiceUltimo:ts},{merge:true})}).catch(()=>{})}catch(e){}}
+{const _cr=cheatReply;cheatReply=function(n,t){const r=_cr.apply(this,arguments);if(r&&!ui.cd9t){ui.cd9t=1;setTimeout(()=>ui.cd9t=0,3000);cd9Track()}return r}}
+
+// ---------- nella pausa: il tuo account (cambia, aggiungi, esci) ----------
+function acc9Pausa(){const old=$('acc9w');if(old)old.remove();const c=ACC9.cur(),u=OL9.user;const w=document.createElement('div');w.id='acc9w';w.dataset.p9=1;
+  w.innerHTML=`<div class="bx" style="text-align:left"><div style="text-align:center"><div style="font-size:46px">${c?c.ic:'👤'}</div><h2>${c?esc(c.n):'Nessun account'}</h2>
+    <p>${c?(c.fb?'☁️ Account online: la partita si salva su internet':'📱 Account su questo dispositivo')+' · '+esc(ACC9.info(c.id)):'Crea un account: così il gioco si ricorda di te!'}</p></div>
+    <div class="acc9"><div data-cl9></div>${ACC9.d().list.filter(a=>!a.fb).length?'<b style="font-size:13px">🔁 Cambia account:</b>'+acc9List(1):''}
+    <b style="font-size:13px">➕ Aggiungi un account:</b>${acc9Make('+ Aggiungi')}
+    ${c&&!c.fb?`<button type="button" class="b alt" data-acc-esci9="1">🚪 Esci dall'account</button>`:''}
+    ${c?`<button type="button" class="b alt" data-acc-new="1">✨ Vita nuova con ${esc(c.n)}</button>`:''}</div>
+    <button type="button" class="b big" data-acc-x="1" style="margin-top:12px;width:100%;border-radius:14px;border:0;background:#3fd98a;color:#04140a;font:900 16px var(--f-body);cursor:pointer">▶ Torna al gioco</button></div>`;
+  document.body.appendChild(w);acc9Bind(w);if(typeof cl9Ui==='function')cl9Ui();w.onclick=ev=>{if(ev.target===w)w.remove()};
+  const e9=w.querySelector('[data-acc-esci9]');if(e9)e9.onclick=ev=>{ev.stopPropagation();if(!confirm('Vuoi uscire dall\'account? La tua partita resta salvata: la ritrovi quando rientri.'))return;ACC9.stash();const o=ACC9.d();o.cur=null;ACC9.w(o);try{localStorage.removeItem(LS)}catch(_){}acc9Go()}}
+{const _o=psOpen;psOpen=function(){const r=_o.apply(this,arguments);try{const e=$('ps9');if(e&&!e.querySelector('[data-p="acc9"]')){const b=document.createElement('button');b.dataset.p='acc9';b.textContent='👤 Account: cambia, aggiungi, esci';
+    const ref=e.querySelector('[data-p="save"]');ref?ref.parentNode.insertBefore(b,ref):e.querySelector('.in').appendChild(b);b.onclick=ev=>{ev.stopPropagation();psClose();acc9Pausa()}}}catch(err){}return r}}
+
+// ---------- pulsanti più pronti (niente attesa al tocco) e Firebase già pronto quando premi Google o Registrati ----------
+{const st=document.createElement('style');st.textContent='button,.btn,.b,[data-p],[role=button],a{touch-action:manipulation;-webkit-tap-highlight-color:transparent}button:active,.btn:active,.b:active{transform:scale(.97);filter:brightness(1.08)}';document.head.appendChild(st)}
+if(nm9Ok())setTimeout(()=>{try{if(navigator.onLine!==false)cl9Load().catch(()=>{})}catch(e){}},700);
+
+// ---------- installa l'app (sul telefono e sul computer) ----------
+const APP9={ev:null};
+const app9Std=()=>{try{return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return false}};
+const app9IOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();APP9.ev=e;app9Btn()});
+addEventListener('appinstalled',()=>{APP9.ev=null;app9Btn();toast('📲 App installata! La trovi tra le app del telefono o del computer.')});
+function app9Can(){return !app9Std()&&(APP9.ev||app9IOS()||/^https:/.test(location.protocol)&&!/claude|usercontent/.test(location.host))}
+function app9Btn(){let b=$('app9');const show=app9Can()&&!$('screen').hidden;if(!show){if(b)b.remove();return}
+  if(!b){b=document.createElement('button');b.id='app9';b.type='button';b.innerHTML='📲 Installa l\'app';b.onclick=app9Go;const sc=$('screen'),tg=sc&&sc.querySelector('p');if(tg)tg.insertAdjacentElement('afterend',b);else document.body.appendChild(b)}}
+async function app9Go(){if(APP9.ev){const e=APP9.ev;APP9.ev=null;e.prompt();try{await e.userChoice}catch(_){}app9Btn();return}
+  const w=document.createElement('div');w.id='acc9w';w.innerHTML=`<div class="bx"><div style="font-size:46px">📲</div><h2>Installa l'app</h2>${app9IOS()?
+    '<p>Su iPhone e iPad: premi il pulsante <b>Condividi</b> (il quadrato con la freccia in su) in basso, poi <b>«Aggiungi a Home»</b>.</p>':
+    '<p>Apri il menu del browser (i tre puntini <b>⋮</b> in alto a destra) e premi <b>«Installa app»</b> oppure <b>«Aggiungi a schermata Home»</b>.</p>'}
+    <button type="button" class="b big" data-acc-x="1" style="width:100%;border-radius:14px;border:0;background:#3fd98a;color:#04140a;font:900 16px var(--f-body);cursor:pointer">Ho capito</button></div>`;document.body.appendChild(w);acc9Bind(w);w.onclick=ev=>{if(ev.target===w)w.remove()}}
+{const st=document.createElement('style');st.textContent='#app9{display:block;margin:2px 0 12px;position:relative;z-index:2;border:0;border-radius:999px;padding:10px 16px;background:#3fd98a;color:#04140a;font:900 15px var(--f-body,system-ui);box-shadow:0 4px 18px rgba(63,217,138,.45);cursor:pointer}';document.head.appendChild(st)}
+setInterval(()=>{try{app9Btn()}catch(e){}},1000);
+if('serviceWorker' in navigator&&/^https:/.test(location.protocol)&&/github\.io$/.test(location.host))navigator.serviceWorker.register('sw.js').catch(()=>{});
+// l'Installa app c'è sempre: in fondo alle Impostazioni del telefono e in fondo al menu della pausa
+function app9Li(){const st=app9Std();return `<button class="li9" data-app9="1"><span class="av9">📲</span><span class="tx"><b>${st?'App installata':'Installa l\'app'}</b><small>${st?'Stai già giocando con l\'app 👍':'Mettila sul telefono o sul computer: si apre come un\'app'}</small></span></button>`}
+{const _r=phRender;phRender=function(){const r=_r.apply(this,arguments);try{if(PH9.app==='set'){const sc=document.querySelector('#ph9 .scr');if(sc&&!sc.querySelector('[data-app9]')){sc.insertAdjacentHTML('beforeend',app9Li());
+  sc.querySelector('[data-app9]').onclick=ev=>{ev.stopPropagation();if(app9Std())return toast('📲 Stai già usando l\'app!');phClose();app9Go()}}}}catch(e){}return r}}
+{const _o=psOpen;psOpen=function(){const r=_o.apply(this,arguments);try{const e=$('ps9');if(e&&!e.querySelector('[data-p="app9"]')){const b=document.createElement('button');b.dataset.p='app9';b.textContent=app9Std()?'📲 App installata':'📲 Installa l\'app';
+  e.querySelector('.in').appendChild(b);b.onclick=ev=>{ev.stopPropagation();psClose();if(app9Std())return toast('📲 Stai già usando l\'app!');app9Go()}}}catch(err){}return r}}
 function drawPalazzo(a){
   const X=a.x*T,Y=a.y*T,Wd=a.w*T,Hd=a.h*T,c=cx;
   c.fillStyle='rgba(0,0,0,.2)';c.beginPath();c.moveTo(X+Wd,Y+6);c.lineTo(X+Wd+14,Y+18);c.lineTo(X+Wd+14,Y+Hd+8);c.lineTo(X+10,Y+Hd+8);c.lineTo(X,Y+Hd);c.closePath();c.fill();
