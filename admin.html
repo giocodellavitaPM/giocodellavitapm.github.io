@@ -1,0 +1,80 @@
+<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow">
+<title>Account PM</title><link rel="manifest" href="admin-manifest.json"><meta name="theme-color" content="#07110c"><link rel="icon" href="icona-192.png"><link rel="apple-touch-icon" href="icona-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Account PM">
+<style>
+:root{--bg:#07110c;--card:#0d1a13;--card2:#11241a;--ink:#eafff2;--soft:#8fb7a0;--line:#1f3a2b;--acc:#3fd98a;--acc2:#0f5a30;--bad:#ff7b86;--gold:#ffd84a}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.w{max-width:980px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 16px 40px}
+header{display:flex;align-items:center;gap:12px;margin-bottom:14px}header img{width:42px;height:42px;border-radius:12px}header h1{font-size:20px;margin:0;line-height:1.1}header small{color:var(--soft);font-weight:600}
+header .sp{flex:1}.live{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:var(--acc)}.live i{width:8px;height:8px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px var(--acc);animation:p 1.6s infinite}@keyframes p{50%{opacity:.3}}
+button{font:inherit;font-weight:800;border-radius:12px;padding:9px 14px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}button.p{background:var(--acc);border-color:var(--acc);color:#04140a}
+.kp{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}.kp div{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 12px}.kp b{display:block;font-size:24px;font-variant-numeric:tabular-nums}.kp small{color:var(--soft);font-weight:700;font-size:12px}
+@media (max-width:620px){.kp{grid-template-columns:repeat(2,1fr)}}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.bar input,.bar select{flex:1;min-width:150px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit}
+.list{display:grid;gap:8px}
+.it{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 12px;cursor:pointer;text-align:left;width:100%;color:inherit;font:inherit}
+.it:hover{border-color:var(--acc)}.av{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--acc2);font-weight:900;font-size:18px}
+.it b{display:block}.it small{display:block;color:var(--soft);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.it .r{text-align:right}.it .r b{font-variant-numeric:tabular-nums}
+.chip{display:inline-block;padding:1px 8px;border-radius:99px;background:var(--card2);color:var(--acc);font-size:11.5px;font-weight:800;margin-right:4px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:#5b6f63}.dot.on{background:var(--acc);box-shadow:0 0 6px var(--acc)}
+.md{position:fixed;inset:0;background:rgba(0,0,0,.6);display:grid;place-items:end center;z-index:5;padding:0}
+.sh{width:min(560px,100%);max-height:88vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:22px 22px 0 0;padding:18px 16px max(18px,env(safe-area-inset-bottom))}
+@media (min-width:700px){.md{place-items:center}.sh{border-radius:22px}}
+.sh h2{margin:0;font-size:20px}.sh .sub{color:var(--soft);margin:2px 0 12px;font-weight:600}
+.gr{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.gr div{background:var(--card2);border-radius:14px;padding:9px 11px}.gr small{display:block;color:var(--soft);font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.4px}.gr b{font-size:16px;font-variant-numeric:tabular-nums}
+.st{display:grid;gap:6px;margin:8px 0}.st div{display:grid;grid-template-columns:110px 1fr 34px;gap:8px;align-items:center;font-size:13px;font-weight:700}.st i{height:8px;border-radius:9px;background:var(--line);overflow:hidden}.st i u{display:block;height:100%;background:var(--acc)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}.err{color:var(--bad);font-weight:800}.neg{color:var(--bad)}
+.empty{color:var(--soft);text-align:center;padding:30px}
+.ins{margin:12px 0;padding:10px 12px;border-radius:14px;background:var(--card2);font-size:13px;font-weight:600;color:var(--soft)}
+</style></head><body><div class="w">
+<header><img src="icona-192.png" alt=""><div><h1>Account del gioco</h1><small>Gioco della Vita PM</small></div><span class="sp"></span><span class="live" id="lv" hidden><i></i>dal vivo</span></header>
+<div id="app"><div class="card">⏳ Carico…</div></div></div>
+<script src="fb/firebase-app-compat.js"></script><script src="fb/firebase-auth-compat.js"></script><script src="fb/firebase-firestore-compat.js"></script>
+<script>
+if('serviceWorker' in navigator)navigator.serviceWorker.register('admin-sw.js').catch(()=>{});
+firebase.initializeApp({apiKey:"AIzaSyBJRUlGK_ArYn2K_pJ0ePChTUC3gkikwgY",authDomain:"gioco-della-vita-pm.firebaseapp.com",projectId:"gioco-della-vita-pm",storageBucket:"gioco-della-vita-pm.firebasestorage.app",messagingSenderId:"83815479634",appId:"1:83815479634:web:86220d0844b898c5e1628b"});
+const A=firebase.auth(),D=firebase.firestore(),$=s=>document.querySelector(s),app=$('#app');let rows=[],unsub=null;
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ms=t=>t&&t.toMillis?t.toMillis():0;
+const dt=t=>t&&t.toDate?t.toDate().toLocaleString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+function ago(t){const m=ms(t);if(!m)return '—';const s=(Date.now()-m)/1000;if(s<90)return 'adesso';if(s<3600)return Math.round(s/60)+' min fa';if(s<86400)return Math.round(s/3600)+' ore fa';const d=Math.round(s/86400);return d===1?'ieri':d+' giorni fa'}
+function eur(n){n=Math.round(n||0);const a=Math.abs(n),sg=n<0?'-':'';if(a>=1e12)return sg+(a/1e12).toLocaleString('it-IT',{maximumFractionDigits:1})+' mila mld €';if(a>=1e9)return sg+(a/1e9).toLocaleString('it-IT',{maximumFractionDigits:1})+' mld €';if(a>=1e6)return sg+(a/1e6).toLocaleString('it-IT',{maximumFractionDigits:1})+' mln €';return n.toLocaleString('it-IT')+' €'}
+const SC={asilo:'Asilo',elementari:'Scuola elementare',medie:'Scuola media',liceo:'Liceo',tecnico:'Istituto tecnico',prof:'Istituto professionale'};
+// legge la partita salvata e tira fuori le cose importanti
+function info(r){let s=null;try{s=r.salvataggio?JSON.parse(r.salvataggio):null}catch(e){}const p=r.personaggio||{};
+  if(!s)return {nome:p.nome||'—',eta:p.eta,citta:p.citta,vivo:p.vivo,tot:p.soldi||0,tasca:null,banca:null,fa:p.fa||''};
+  const fa=p.fa||(s.age<3?'Neonato':s.school?(SC[s.school.tipo]||s.school.tipo)+(s.school.anno?' · '+s.school.anno+'ª':''):s.uni?'Università':s.job?'Lavora':s.retired?'In pensione':s.age>=16?'Cerca lavoro':'—');
+  return {nome:(s.name||'')+' '+(s.surname||''),sesso:s.sex,eta:s.age,citta:s.city,vivo:s.alive,tasca:s.money||0,banca:s.bank,tot:(s.money||0)+(s.bank||0),fa,
+    st:s.st||{},casa:s.house?s.house.n:(s.home==='genitori'?'Con mamma e papà':s.home||'—'),veicoli:(s.items||[]).filter(i=>i.veh).map(i=>(i.ic||'')+' '+i.n),
+    oggetti:(s.items||[]).filter(i=>!i.veh).length,partner:s.partner?(s.partner.nome||s.partner.n||'Sì'):(s.married?'Sposato':'—'),figli:(s.kids||[]).length,animali:(s.pets||[]).length,
+    patenti:Object.entries(s.lic||{}).filter(x=>x[1]).map(x=>x[0].toUpperCase()).join(', ')||'Nessuna',diploma:s.diploma?'Sì':'No',laurea:s.laurea?'Sì':'No',amici:s.friends||0,multe:s.multe||0}}
+function login(){$('#lv').hidden=true;app.innerHTML=`<div class="card"><p style="margin-top:0">Qui vedi tutti gli account del gioco: chi sono, quanti anni ha il loro personaggio, quanti soldi hanno e cosa fanno.</p><p>Entra con l'account Google dell'amministratrice.</p><button class="p" id="g">Accedi con Google</button></div>`;
+  $('#g').onclick=()=>A.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>{if(e.code==='auth/popup-blocked')A.signInWithRedirect(new firebase.auth.GoogleAuthProvider());else alert(e.message)})}
+function draw(){const q=($('#q').value||'').toLowerCase(),o=$('#o').value,now=Date.now(),day=864e5;
+  rows.forEach(r=>r._i=r._i||info(r));
+  let L=rows.filter(r=>!q||(r.nome+' '+r.email+' '+r._i.nome+' '+r._i.citta).toLowerCase().includes(q));
+  L.sort(o==='soldi'?(a,b)=>b._i.tot-a._i.tot:o==='eta'?(a,b)=>(b._i.eta||0)-(a._i.eta||0):o==='nuovi'?(a,b)=>ms(b.creato)-ms(a.creato):(a,b)=>ms(b.ultimo)-ms(a.ultimo));
+  $('#kp').innerHTML=`<div><b>${rows.length}</b><small>👥 Account</small></div><div><b>${rows.filter(r=>now-ms(r.ultimo)<600000).length}</b><small>🟢 Giocano adesso</small></div><div><b>${rows.filter(r=>now-ms(r.ultimo)<day).length}</b><small>📅 Oggi</small></div><div><b>${rows.filter(r=>now-ms(r.creato)<7*day).length}</b><small>✨ Nuovi in 7 giorni</small></div>`;
+  $('#ls').innerHTML=L.map(r=>{const i=r._i,on=now-ms(r.ultimo)<600000;return `<button class="it" data-id="${r.id}"><span class="av">${esc((r.nome||'?')[0].toUpperCase())}</span><span style="min-width:0"><b><span class="dot ${on?'on':''}"></span>${esc(r.nome)}</b><small>${esc(r.email)}</small><small>${i.eta!=null?`🎂 ${i.eta} anni · `:''}${esc(i.fa)}${i.citta?' · '+esc(i.citta):''}${i.vivo===false?' · 🕊️ vita finita':''}</small></span><span class="r"><b class="${i.tot<0?'neg':''}">${eur(i.tot)}</b><small>${ago(r.ultimo)}</small></span></button>`}).join('')||'<div class="empty">Ancora nessun account. Quando qualcuno si registra nel gioco, compare qui da solo.</div>';
+  document.querySelectorAll('.it').forEach(b=>b.onclick=()=>det(b.dataset.id))}
+function det(id){const r=rows.find(x=>x.id===id);if(!r)return;const i=r._i,st=i.st||{},S=[['😊 Felicità','fel'],['❤️ Salute','sal'],['🧠 Intelligenza','int'],['🤝 Simpatia','sim'],['⚽ Sport','spo']];
+  const m=document.createElement('div');m.className='md';m.innerHTML=`<div class="sh"><div style="display:flex;justify-content:space-between;gap:10px"><div><h2>${esc(r.nome)}</h2><div class="sub">${esc(r.email)} · <span class="chip">${esc(r.accesso||'')}</span></div></div><button id="x" style="align-self:flex-start">✕</button></div>
+   <div class="gr"><div><small>Iscritto</small><b>${dt(r.creato)}</b></div><div><small>Ultima volta</small><b>${ago(r.ultimo)}</b></div></div>
+   <h3 style="margin:14px 0 4px">🧍 ${esc(i.nome)}</h3><div class="sub">${i.sesso==='f'?'Bambina/donna':i.sesso==='m'?'Bambino/uomo':''} ${i.citta?'· '+esc(i.citta):''} ${i.vivo===false?'· 🕊️ vita finita':''}</div>
+   <div class="gr"><div><small>🎂 Età nel gioco</small><b>${i.eta!=null?i.eta+' anni':'—'}</b></div><div><small>🎒 Cosa fa</small><b>${esc(i.fa)}</b></div>
+   <div><small>💵 In tasca</small><b>${i.tasca!=null?eur(i.tasca):'—'}</b></div><div><small>🏦 In banca</small><b>${i.banca!=null?eur(i.banca):'Nessun conto'}</b></div>
+   <div><small>💰 Totale</small><b>${eur(i.tot)}</b></div><div><small>🏠 Casa</small><b>${esc(i.casa||'—')}</b></div>
+   <div><small>🚗 Veicoli</small><b>${i.veicoli&&i.veicoli.length?esc(i.veicoli.join(', ')):'Nessuno'}</b></div><div><small>🪪 Patenti</small><b>${esc(i.patenti||'—')}</b></div>
+   <div><small>💑 Partner</small><b>${esc(i.partner||'—')}</b></div><div><small>👶 Figli · 🐶 Animali</small><b>${i.figli||0} · ${i.animali||0}</b></div>
+   <div><small>🎓 Diploma · Laurea</small><b>${i.diploma||'—'} · ${i.laurea||'—'}</b></div><div><small>👫 Amici · 👮 Multe</small><b>${i.amici||0} · ${i.multe||0}</b></div></div>
+   ${st.fel!=null?`<div class="st">${S.map(([n,k])=>`<div><span>${n}</span><i><u style="width:${Math.max(0,Math.min(100,st[k]||0))}%"></u></i><span>${Math.round(st[k]||0)}</span></div>`).join('')}</div>`:''}
+   <div class="ins">I dati si aggiornano da soli mentre gioca.</div><button id="dl" style="color:var(--bad)">🗑️ Cancella i dati di questo account</button></div>`;
+  document.body.appendChild(m);m.onclick=e=>{if(e.target===m)m.remove()};m.querySelector('#x').onclick=()=>m.remove();
+  m.querySelector('#dl').onclick=async()=>{if(!confirm('Cancellare i dati e la partita di '+r.nome+'?'))return;await D.collection('utenti').doc(r.id).delete();m.remove()}}
+A.onAuthStateChanged(u=>{if(unsub){unsub();unsub=null}if(!u)return login();
+  app.innerHTML=`<div class="kp" id="kp"></div><div class="bar"><input id="q" placeholder="🔍 Cerca nome, email o città"><select id="o"><option value="ultimo">Giocato di recente</option><option value="nuovi">Nuovi iscritti</option><option value="soldi">Più soldi</option><option value="eta">Più grandi</option></select></div><div class="list" id="ls"></div>
+   <p style="color:var(--soft);font-size:13px;margin-top:18px">Entrata come ${esc(u.email)} · <a href="#" id="out" style="color:var(--acc)">esci</a><br>📲 Per averla come app: sul telefono apri il menu del browser e premi "Aggiungi a schermata Home".</p>`;
+  $('#out').onclick=e=>{e.preventDefault();A.signOut()};$('#q').oninput=draw;$('#o').onchange=draw;
+  unsub=D.collection('utenti').onSnapshot(s=>{rows=s.docs.map(d=>({id:d.id,...d.data()}));$('#lv').hidden=false;draw()},
+    e=>{$('#lv').hidden=true;app.innerHTML=`<div class="card"><p class="err">Non hai il permesso di vedere gli account.</p><p>Sei entrata come <b>${esc(u.email)}</b>. Devi entrare con <b>piemastro13@gmail.com</b>.</p><button id="o2">Esci e cambia account</button></div>`;$('#o2').onclick=()=>A.signOut()})});
+setInterval(()=>{if(rows.length&&$('#ls'))draw()},60000);
+</script></body></html>

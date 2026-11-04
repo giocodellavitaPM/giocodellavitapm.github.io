@@ -1,0 +1,10 @@
+const {chromium}=require('playwright');(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:390,height:780}});
+const errs=[];p.on('pageerror',e=>errs.push('ERR '+e.message));
+await p.goto('file://'+process.cwd()+'/'+(process.env.DIR||'vita9')+'/index.html');await p.evaluate(()=>{localStorage.clear();localStorage.setItem('vita_td9','0')});await p.reload();await p.waitForTimeout(800);
+await p.click('#born');await p.waitForTimeout(500);await p.evaluate(()=>{ui.result=null;renderModal();setAge(14);S.scene='citta';S.pos={x:7.5,y:12.5};save();updateHud()});await p.waitForTimeout(1500);
+const pos0=await p.evaluate(()=>JSON.stringify(S.pos));
+await p.click('#phoneBtn');await p.click('[data-ph="msg"]');await p.click('[data-cv="mamma"]');
+await p.click('#ph9in');await p.keyboard.type('ciao mamma, cosa si mangia stasera?');await p.keyboard.press('Enter');await p.waitForTimeout(1800);
+await p.keyboard.type('wasd ti voglio bene');await p.click('[data-send]');await p.waitForTimeout(1800);
+console.log(await p.evaluate(()=>JSON.stringify(phConv('mamma').m)),'moved',await p.evaluate(()=>JSON.stringify(S.pos)),pos0,'phone open',!!(await p.$('#ph9')));
+await p.screenshot({path:'m4.png'});console.log(errs.join('\n'));await b.close()})();

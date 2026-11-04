@@ -1,0 +1,6 @@
+const {chromium}=require('playwright');(async()=>{const b=await chromium.launch();for(const [vp,n] of [[{width:900,height:420},'I'],[{width:390,height:844},'J']]){const p=await b.newPage({viewport:vp});const errs=[];p.on('pageerror',e=>errs.push('ERR '+e.message));
+await p.addInitScript(()=>{window.NASC9T=1});
+await p.goto('file://'+process.cwd()+'/vitaN/index.html');await p.evaluate(()=>{localStorage.clear();localStorage.setItem('vita_td9','0')});await p.reload();await p.waitForTimeout(1500);await p.evaluate(()=>{const g=document.getElementById('gira9');if(g)g.remove()});
+await p.screenshot({path:n+'1.png'});await p.evaluate(()=>document.getElementById('ch9').scrollIntoView());await p.click('[data-ch9="sportivo"]');await p.click('[data-se9="estate"]');await p.click('#dice9');await p.waitForTimeout(300);await p.screenshot({path:n+'2.png'});
+await p.click('#born');await p.waitForTimeout(2800);await p.screenshot({path:n+'3.png'});await p.waitForTimeout(2200);await p.screenshot({path:n+'4.png'});
+console.log(n,await p.evaluate(()=>[S.name,S.car9,S.sea9,S.st.spo,S.peso9]));await p.click('#nasc9 .go');await p.waitForTimeout(900);console.log('gone',await p.evaluate(()=>!document.getElementById('nasc9')&&!document.getElementById('sky9')));console.log(errs.join('\n'));await p.close()}await b.close()})();

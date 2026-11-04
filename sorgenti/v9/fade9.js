@@ -1,0 +1,9 @@
+/* ================= v9: come in GTA, quello che sta tra la telecamera e te (pali, semafori, fermate, persone) diventa trasparente ================= */
+function tdFade9(m,key,hmax){if(!TD.fadeU)TD.fadeU={uP:{value:new THREE.Vector3(0,-99,0)},uC:{value:new THREE.Vector3()}};m.customProgramCacheKey=()=>key;m.onBeforeCompile=sh=>{sh.uniforms.uP9=TD.fadeU.uP;sh.uniforms.uC9=TD.fadeU.uC;
+  sh.vertexShader=sh.vertexShader.replace('void main() {','varying float vCamD;varying vec3 vW9;\nvoid main() {').replace('#include <project_vertex>','#include <project_vertex>\n  vCamD=-mvPosition.z;\n  #ifdef USE_INSTANCING\n  vW9=(modelMatrix*instanceMatrix*vec4(transformed,1.)).xyz;\n  #else\n  vW9=(modelMatrix*vec4(transformed,1.)).xyz;\n  #endif');
+  sh.fragmentShader=sh.fragmentShader.replace('void main() {',`varying float vCamD;varying vec3 vW9;uniform vec3 uP9,uC9;\nvoid main() {\n  {float dd=fract(sin(dot(floor(gl_FragCoord.xy),vec2(12.9898,78.233)))*43758.5453);float a=1.;if(vCamD<1.3)a=(vCamD-.55)/.75;\n   vec3 ab=uP9-uC9;ab.y=0.;float L=dot(ab,ab);if(L>.01){vec3 w=vW9-uC9;w.y=0.;float h=clamp(dot(w,ab)/L,0.,1.);if(h<${hmax.toFixed(2)}){float q=length(w-ab*h);a=min(a,(q-.3)/.35);}}\n   if(a<1.&&(a<0.||dd>a))discard;}`)};m.needsUpdate=true;return m}
+// le persone: si sfumano solo se sono ben davanti a te (mai Pietro)
+if(typeof THREE!=='undefined'&&typeof tdVCM!=='undefined'&&!tdVCM)tdVCM=tdFade9(new THREE.MeshLambertMaterial({vertexColors:true}),'vcm9',.78);
+{const _b=tdBuildCity;tdBuildCity=function(){try{['#2f3337','#3a3d41','#e0b021','#2b3036'].forEach(c=>{const m=tdMat(c);if(!m.userData.f9){m.userData.f9=1;tdFade9(m,'pole9'+c,.95)}})}catch(e){}return _b.apply(this,arguments)}}
+// anche la faccia (se no restava una testa da sola!)
+{const _f=tdFaceMat;tdFaceMat=function(lk){const m=_f.apply(this,arguments);try{if(m&&!m.userData.f9){m.userData.f9=1;tdFade9(m,'face9',.78)}}catch(e){}return m}}
