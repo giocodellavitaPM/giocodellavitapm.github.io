@@ -83,3 +83,12 @@ function set9Open(){if(!S||ui.sheet||ui.chatNpc||S.pending||ui.result)return;if(
 {const _r=phRender;phRender=function(){if(ui.set9)PH9.app='set';const r=_r.apply(this,arguments);try{if(ui.set9){const h=document.querySelector('#ph9 [data-ph="home"]');if(h)h.onclick=ev=>{ev.stopPropagation();phClose()}}}catch(e){}return r}}
 {const _o=psOpen;psOpen=function(){const r=_o.apply(this,arguments);try{const e=$('ps9');if(e&&!e.querySelector('[data-p="set"]')){const b=document.createElement('button');b.dataset.p='set9';b.textContent='⚙️ Impostazioni';
   const ref=e.querySelector('[data-p="acc9"]')||e.querySelector('[data-p="save"]');ref?ref.parentNode.insertBefore(b,ref):e.querySelector('.in').appendChild(b);b.onclick=ev=>{ev.stopPropagation();psClose();set9Open()}}}catch(err){}return r}}
+// ---------- statistiche del sito (anonime): quante visite, dal sito o dall'app, quanti nuovi, quante installazioni ----------
+const VS9={on:()=>nm9Ok()&&/github\.io$/.test(location.host)||window.VS9T,day:()=>{try{return new Date().toLocaleDateString('sv-SE',{timeZone:'Europe/Rome'})}catch(e){return new Date().toISOString().slice(0,10)}}};
+function st9Add(f){if(!VS9.on())return;nm9Db().then(db=>{const F=firebase.firestore.FieldValue,d={};for(const k in f)d[k]=F.increment(f[k]);d.agg=F.serverTimestamp();
+  return Promise.all([db.collection('statistiche').doc(VS9.day()).set(d,{merge:true}),db.collection('statistiche').doc('totale').set(d,{merge:true})])}).catch(()=>{})}
+function st9Inst(){try{if(localStorage.getItem('vita_inst9'))return;localStorage.setItem('vita_inst9','1')}catch(e){return}st9Add({installazioni:1})}
+setTimeout(()=>{try{if(!VS9.on()||sessionStorage.getItem('vita_vis9'))return;sessionStorage.setItem('vita_vis9','1');const app=app9Std(),f={visite:1};f[app?'app':'sito']=1;
+  f[/android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)?'telefono':'computer']=1;
+  let nu=0;try{if(!localStorage.getItem('vita_vis9')){localStorage.setItem('vita_vis9',VS9.day());nu=1}}catch(e){}if(nu)f.nuovi=1;st9Add(f);if(app)st9Inst()}catch(e){}},2500);
+addEventListener('appinstalled',()=>{try{st9Inst()}catch(e){}});
