@@ -77,3 +77,9 @@ function app9Li(){const st=app9Std();return `<button class="li9" data-app9="1"><
   sc.querySelector('[data-app9]').onclick=ev=>{ev.stopPropagation();if(app9Std())return toast('📲 Stai già usando l\'app!');phClose();app9Go()}}}}catch(e){}return r}}
 {const _o=psOpen;psOpen=function(){const r=_o.apply(this,arguments);try{const e=$('ps9');if(e&&!e.querySelector('[data-p="app9"]')){const b=document.createElement('button');b.dataset.p='app9';b.textContent=app9Std()?'📲 App installata':'📲 Installa l\'app';
   e.querySelector('.in').appendChild(b);b.onclick=ev=>{ev.stopPropagation();psClose();if(app9Std())return toast('📲 Stai già usando l\'app!');app9Go()}}}catch(err){}return r}}
+// le Impostazioni ci sono sempre nella pausa, anche da piccoli (senza telefono): colori, vista, grafica…
+function set9Open(){if(!S||ui.sheet||ui.chatNpc||S.pending||ui.result)return;if(typeof phOK==='function'&&phOK())return phOpen('set');ui.set9=1;ui.ph9=1;PH9.app='set';PH9.conv=null;phRender()}
+{const _c=phClose;phClose=function(){ui.set9=0;return _c.apply(this,arguments)}}
+{const _r=phRender;phRender=function(){if(ui.set9)PH9.app='set';const r=_r.apply(this,arguments);try{if(ui.set9){const h=document.querySelector('#ph9 [data-ph="home"]');if(h)h.onclick=ev=>{ev.stopPropagation();phClose()}}}catch(e){}return r}}
+{const _o=psOpen;psOpen=function(){const r=_o.apply(this,arguments);try{const e=$('ps9');if(e&&!e.querySelector('[data-p="set"]')){const b=document.createElement('button');b.dataset.p='set9';b.textContent='⚙️ Impostazioni';
+  const ref=e.querySelector('[data-p="acc9"]')||e.querySelector('[data-p="save"]');ref?ref.parentNode.insertBefore(b,ref):e.querySelector('.in').appendChild(b);b.onclick=ev=>{ev.stopPropagation();psClose();set9Open()}}}catch(err){}return r}}
