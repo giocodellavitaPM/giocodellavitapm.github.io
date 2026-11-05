@@ -9903,7 +9903,7 @@ function sk9Open(){if($('sk9')||!S)return;const e=document.createElement('div');
 {const _pr=phRender;phRender=function(){const r=_pr.apply(this,arguments);try{if(PH9.app==='set'){const sc=document.querySelector('#ph9 .scr');if(sc&&!$('sk9b')){const b=document.createElement('button');b.id='sk9b';b.className='li9';
   b.innerHTML='<span class="av9">⏩</span><span class="tx"><b>Salta i primi 5 anni</b><small>Funzione speciale · tocca per saperne di più</small></span>';b.onclick=ev=>{ev.stopPropagation();sk9Open()};sc.insertBefore(b,sc.firstChild)}}}catch(e){}return r}}
 // ✉️ Scrivici: chat con chi ha creato il gioco. I messaggi vanno nella Posta dell'app account; le risposte arrivano in risposte/{acc_id}
-const PM9={m:[],codice:'13052013',t:0};
+const PM9={m:[],codice:'30052013',t:0};
 function pm9Key(){const a=sk9Acc();if(a&&a.fb&&a.uid)return {acc:'u',id:a.uid,n:a.n};if(a&&a.reg)return {acc:'n',id:a.reg,n:a.n};let d='x';try{d=localStorage.getItem('vita_dev9');if(!d){d=Math.random().toString(36).slice(2,12);localStorage.setItem('vita_dev9',d)}}catch(e){}return {acc:'d',id:d,n:a?a.n:(S&&S.name)||'Senza account'}}
 const pm9LS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}};
 function pm9On(){return pm9LS('vita_pm9on')==='1'}
@@ -9959,6 +9959,19 @@ function nm9Menu(id){const c=phContacts().find(q=>q.id===id);if(!c)return;const 
   if(PH9.app==='msg'&&PH9.conv){const br=ph.querySelector('.bar9');if(br&&!br.querySelector('.dt9m')){const d=document.createElement('button');d.className='bk dt9m';d.setAttribute('aria-label','Altre opzioni');d.textContent='⋯';const id=PH9.conv;d.addEventListener('click',ev=>{ev.stopPropagation();nm9Menu(id)});const x=br.querySelector('[data-ph="close"]');br.insertBefore(d,x)}}}catch(e){}return r}}
 {const st=document.createElement('style');st.textContent=`#ph9 .dt9m{margin-left:auto;padding:4px 10px;border-radius:12px;font:900 20px/1 var(--f-body);color:#eafff2;cursor:pointer;flex:none}#ph9 .li9 .dt9m:hover{background:#13241a}#ph9 .bar9 .dt9m{margin-left:0}
 #nm9{position:absolute;inset:0;z-index:50;background:rgba(0,0,0,.6);display:grid;place-items:center;padding:16px}#nm9 .nm9b{background:#0b1610;border:1.5px solid var(--neon);border-radius:18px;padding:16px;width:100%;max-width:300px;display:flex;flex-direction:column;gap:8px;color:#eafff2}#nm9 small{color:var(--soft);font-weight:700}#nm9 input{padding:10px;border-radius:12px;border:1.5px solid rgba(63,217,138,.4);background:#13241a;color:#fff;font-size:16px}#nm9 .nm9r{display:flex;gap:6px;flex-wrap:wrap}#nm9 .nm9r button{flex:1;padding:9px;border-radius:12px;border:1.5px solid rgba(63,217,138,.4);background:#13241a;color:#eafff2;font-weight:800;cursor:pointer}#nm9 .nm9r .ok{background:var(--neon);color:#021008}`;document.head.appendChild(st)}
+/* v85i: modifiche dall'app account anche per chi ha solo il nome (nomi/{reg}.modifica) */
+async function nm9Mod(){try{if(!nm9Ok()||!navigator.onLine||!S)return;const a=sk9Acc();if(!a||a.fb||!a.reg)return;const db=await nm9Db();
+  const g=await nm9T(db.collection('nomi').doc(a.reg).get(),6000);if(!g||!g.exists)return;const d=g.data();if(!d.modifica||!d.modAdmin)return;
+  const t=d.modAdmin.toMillis?d.modAdmin.toMillis():+d.modAdmin||0;const k='vita_nm9m_'+a.reg,seen=+pm9LS(k)||0;if(!t||t<=seen)return;
+  if(S.pending||ui.result)return;const m=d.modifica;
+  if(typeof m.age==='number'&&m.age!==S.age&&m.age>=0&&m.age<=110&&S.alive){try{setAge(Math.round(m.age))}catch(e){S.age=Math.round(m.age)}}
+  try{updateHud()}catch(e){}const ap=()=>{if(m.sex==='m'||m.sex==='f')S.sex=m.sex;if(typeof m.money==='number')S.money=Math.round(m.money);if(typeof m.bank==='number')S.bank=Math.round(m.bank);if(m.bank===null)S.bank=null;
+  if(m.name)S.name=String(m.name).slice(0,30);if(m.surname)S.surname=String(m.surname).slice(0,30);
+  if(m.lic&&typeof m.lic==='object'){S.lic=S.lic||{};for(const x in m.lic)S.lic[x]=!!m.lic[x]}
+  if(typeof m.multe==='number')S.multe=Math.max(0,Math.round(m.multe));if(typeof m.energy==='number'&&typeof EN_MAX!=='undefined')S.energy=Math.max(0,Math.min(EN_MAX,m.energy));
+  if(m.st&&S.st)for(const x in m.st)if(x in S.st)S.st[x]=Math.max(0,Math.min(100,+m.st[x]||0))};
+  ap();try{updateHud()}catch(e){}ap();pm9LS(k,String(t));updateHud();save();toast('✏️ La tua partita è stata aggiornata da chi ha creato il gioco!')}catch(e){}}
+setTimeout(()=>{nm9Mod();setInterval(()=>{if(!document.hidden)nm9Mod()},180000)},6000);
 function drawPalazzo(a){
   const X=a.x*T,Y=a.y*T,Wd=a.w*T,Hd=a.h*T,c=cx;
   c.fillStyle='rgba(0,0,0,.2)';c.beginPath();c.moveTo(X+Wd,Y+6);c.lineTo(X+Wd+14,Y+18);c.lineTo(X+Wd+14,Y+Hd+8);c.lineTo(X+10,Y+Hd+8);c.lineTo(X,Y+Hd);c.closePath();c.fill();
