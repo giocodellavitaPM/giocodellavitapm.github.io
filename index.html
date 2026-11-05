@@ -9865,6 +9865,35 @@ phReply=function(id,v){try{return phReply9(id,v)}catch(e){return 'Ok! 😊'}};
   if(c.id.startsWith('n_')){P.push(['Ti va di fare un giro in centro uno di questi giorni? 🛍️',['Sì, volentieri!','Magari più avanti'],['Fantastico! Ci sentiamo! 😄','Va bene, quando vuoi! 👋']]);P.push(['Ho pensato a te oggi: com\'è andata? 😊',['Benissimo!','Così così'],['Che bello! 🌞','Dai, domani va meglio! 💪']])}
   if(c.id==='capo'){P.push(['Domani c\'è una riunione alle 9. Ci sei? 📋',['Certo!','Arrivo puntuale'],['Perfetto, a domani! 💼','Ottimo! 👍']])}
  }catch(e){}return P}}
+/* ===== v9: «Salta i primi 5 anni» — si chiede per mail; l'amministratrice lo attiva dall'app degli account ===== */
+const SK9_MAIL='pietromastro13@gmail.com';
+function sk9Acc(){try{const c=ACC9.cur();if(!c)return null;return {n:c.n,fb:!!c.fb,uid:c.fb&&OL9.user?OL9.user.uid:null,mail:c.fb&&OL9.user?OL9.user.email:null,reg:c.reg&&c.reg!=='-'?c.reg:null}}catch(e){return null}}
+async function sk9Has(){const a=sk9Acc();if(!a||!nm9Ok())return false;const db=await nm9Db();let g=null;
+  if(a.fb&&a.uid)g=await nm9T(db.collection('utenti').doc(a.uid).get(),6000);else if(a.reg)g=await nm9T(db.collection('nomi').doc(a.reg).get(),6000);
+  return !!(g&&g.exists&&g.data().salta5)}
+function sk9Open(){if($('sk9')||!S)return;const e=document.createElement('div');e.id='sk9';const a=sk9Acc();
+  const sub=encodeURIComponent('Gioco della Vita: saltare i primi 5 anni'),body=encodeURIComponent(`Ciao! Il mio account è: ${a?a.n+(a.mail?' ('+a.mail+')':''):'(scrivi qui il nome del tuo account)'}\nPer saltare i primi 5 anni pagherei: `);
+  e.innerHTML=`<div class="in" role="dialog" aria-label="Salta i primi 5 anni"><div style="font-size:44px">⏩</div><h2>Saltare i primi 5 anni?</h2>
+  <p>I primi 5 anni li fanno soprattutto mamma e papà. Con questa <b>funzione speciale</b> parti subito da 5 anni.</p><div id="sk9s"><p>⏳ Controllo il tuo account…</p></div>
+  <button type="button" data-x>Chiudi</button></div>`;
+  e.addEventListener('click',ev=>{if(ev.target===e||ev.target.closest('[data-x]'))e.remove()});e.addEventListener('keydown',ev=>{ev.stopPropagation();if(ev.key==='Escape')e.remove()});
+  document.body.appendChild(e);const box=e.querySelector('#sk9s');
+  const ask=()=>{box.innerHTML=a?`<p>Per averla scrivi una mail a:</p><p class="ml"><b>${SK9_MAIL}</b></p><p>Scrivi <b>il nome del tuo account</b> (il tuo è: <b>${esc(a.n)}</b>) e <b>quanto saresti disposto a pagare</b>. Quando viene attivata, torna qui e premi il pulsante per saltare!</p>
+     <a class="go" href="mailto:${SK9_MAIL}?subject=${sub}&body=${body}" target="_blank" rel="noopener">✉️ Scrivi una mail</a>`
+    :`<p>Prima crea il tuo account (basta il nome): pausa → ⚙️ Impostazioni → 👤 Il tuo account.</p><p>Poi scrivi a <b class="ml">${SK9_MAIL}</b> il nome del tuo account e quanto saresti disposto a pagare.</p>`};
+  sk9Has().then(ok=>{if(!$('sk9'))return;if(!ok)return ask();
+    box.innerHTML=S.age<5?`<p class="ml"><b>✅ Il tuo account ha la funzione!</b></p><button type="button" class="go" data-sk9go>⏩ Salta a 5 anni</button>`:`<p class="ml"><b>✅ Il tuo account ha la funzione!</b></p><p>Hai già ${S.age} anni: la potrai usare nella tua prossima vita, appena nasci.</p>`;
+    const g=box.querySelector('[data-sk9go]');if(g)g.onclick=ev=>{ev.stopPropagation();try{setAge(5);add('fel',5);save();updateHud();renderModal();e.remove();toast('⏩ Hai saltato i primi 5 anni: adesso hai 5 anni e vai all\'asilo!')}catch(err){}}}).catch(()=>{if($('sk9'))ask()})}
+{const st=document.createElement('style');st.textContent=`#sk9{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);display:grid;place-items:center;padding:16px}
+#sk9 .in{max-width:380px;width:100%;max-height:92vh;overflow:auto;box-sizing:border-box;background:#06110b;color:#eafff2;border:2px solid var(--neon,#3fd98a);border-radius:20px;padding:20px;text-align:center;display:flex;flex-direction:column;gap:10px;font-size:16px}
+#sk9 #sk9s{display:flex;flex-direction:column;gap:10px}#sk9 h2{margin:0;font-size:22px}#sk9 p{margin:0;line-height:1.4}#sk9 .ml{font-size:17px;word-break:break-all;color:var(--neon,#3fd98a)}
+#sk9 .go,#sk9 button{display:block;border-radius:14px;padding:12px;font:inherit;font-weight:800;cursor:pointer;text-decoration:none;border:1.5px solid var(--neon,#3fd98a);background:transparent;color:#eafff2}
+#sk9 .go{background:var(--neon,#3fd98a);color:#021008}`;document.head.appendChild(st)}
+// appena nasci (una volta per vita)
+{const _sg=startGame;startGame=function(){const r=_sg.apply(this,arguments);try{if(S&&S.age<1&&!S.sk9){S.sk9=1;setTimeout(()=>{try{if(S&&S.age<1&&!ui.result)sk9Open()}catch(e){}},1800)}}catch(e){}return r}}
+// nelle Impostazioni
+{const _pr=phRender;phRender=function(){const r=_pr.apply(this,arguments);try{if(PH9.app==='set'){const sc=document.querySelector('#ph9 .scr');if(sc&&!$('sk9b')){const b=document.createElement('button');b.id='sk9b';b.className='li9';
+  b.innerHTML='<span class="av9">⏩</span><span class="tx"><b>Salta i primi 5 anni</b><small>Funzione speciale · tocca per saperne di più</small></span>';b.onclick=ev=>{ev.stopPropagation();sk9Open()};sc.insertBefore(b,sc.firstChild)}}}catch(e){}return r}}
 function drawPalazzo(a){
   const X=a.x*T,Y=a.y*T,Wd=a.w*T,Hd=a.h*T,c=cx;
   c.fillStyle='rgba(0,0,0,.2)';c.beginPath();c.moveTo(X+Wd,Y+6);c.lineTo(X+Wd+14,Y+18);c.lineTo(X+Wd+14,Y+Hd+8);c.lineTo(X+10,Y+Hd+8);c.lineTo(X,Y+Hd);c.closePath();c.fill();
