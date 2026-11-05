@@ -2,7 +2,7 @@
 function sk9Acc(){try{const c=ACC9.cur();if(!c)return null;return {n:c.n,fb:!!c.fb,uid:c.fb&&OL9.user?OL9.user.uid:null,mail:c.fb&&OL9.user?OL9.user.email:null,reg:c.reg&&c.reg!=='-'?c.reg:null}}catch(e){return null}}
 async function sk9Has(){const a=sk9Acc();if(!a||!nm9Ok())return false;const db=await nm9Db();let g=null;
   if(a.fb&&a.uid)g=await nm9T(db.collection('utenti').doc(a.uid).get(),6000);else if(a.reg)g=await nm9T(db.collection('nomi').doc(a.reg).get(),6000);
-  return !!(g&&g.exists&&g.data().salta5)}
+  if(g&&g.exists&&g.data().salta5){const v=+g.data().salta5Soldi;return {soldi:isFinite(v)&&v>0?Math.round(v):0}}return false}
 function sk9Open(){if($('sk9')||!S)return;const e=document.createElement('div');e.id='sk9';const a=sk9Acc();
   e.innerHTML=`<div class="in" role="dialog" aria-label="Salta i primi 5 anni"><div style="font-size:44px">⏩</div><h2>Saltare i primi 5 anni?</h2>
   <p>I primi 5 anni li fanno soprattutto mamma e papà. Con questa <b>funzione speciale</b> parti subito da 5 anni.</p><div id="sk9s"><p>⏳ Controllo il tuo account…</p></div>
@@ -12,39 +12,83 @@ function sk9Open(){if($('sk9')||!S)return;const e=document.createElement('div');
   const ask=()=>{if(!a){box.innerHTML=`<p>Prima crea il tuo account (basta il nome): pausa → ⚙️ Impostazioni → 👤 Il tuo account. Poi torna qui e manda la richiesta!</p>`;return}
     let sent=0;try{sent=+localStorage.getItem('vita_sk9req_'+(a.uid||a.reg||a.n))||0}catch(e){}
     if(sent&&Date.now()-sent<7*864e5){box.innerHTML=`<p class="ml"><b>📩 Richiesta inviata!</b></p><p>Aspetta la risposta: quando la funzione viene attivata sul tuo account (<b>${esc(a.n)}</b>), torna qui e premi il pulsante per saltare.</p>`;return}
-    box.innerHTML=`<p>Manda una richiesta: scrivi <b>quanto saresti disposto a pagare</b>. Arriva con il nome del tuo account: <b>${esc(a.n)}</b>.</p>
-     <input id="sk9p" maxlength="30" placeholder="Quanto pagheresti? (es. 2 €)" aria-label="Quanto pagheresti"><textarea id="sk9m" maxlength="300" rows="2" placeholder="Messaggio (se vuoi)" aria-label="Messaggio"></textarea>
+    box.innerHTML=`<p>Manda una richiesta: scrivi <b>quanti soldi vuoi avere sul conto</b> quando arrivi a 5 anni. Arriva con il nome del tuo account: <b>${esc(a.n)}</b>.</p>
+     <input id="sk9p" type="number" min="0" max="999999999" inputmode="numeric" placeholder="Quanti € sul conto a 5 anni?" aria-label="Quanti euro vuoi sul conto a 5 anni"><textarea id="sk9m" maxlength="300" rows="2" placeholder="Messaggio (se vuoi)" aria-label="Messaggio"></textarea>
      <button type="button" class="go" data-sk9send>📩 Invia la richiesta</button><p id="sk9e" class="sm"></p>`;
     const sb=box.querySelector('[data-sk9send]'),ip=box.querySelector('#sk9p');ip.focus();
-    sb.onclick=async ev=>{ev.stopPropagation();const pr=ip.value.trim(),ms=box.querySelector('#sk9m').value.trim(),er=box.querySelector('#sk9e');if(!pr){er.textContent='✏️ Scrivi quanto pagheresti.';ip.focus();return}
-      sb.disabled=true;sb.textContent='⏳ Invio…';try{const db=await nm9Db();const d={tipo:'salta5',nome:String(a.n).slice(0,40),acc:a.fb?'u':'n',id:String(a.fb?a.uid||'':a.reg||'').slice(0,80),prezzo:pr.slice(0,30),creato:firebase.firestore.FieldValue.serverTimestamp(),letto:false};if(ms)d.msg=ms.slice(0,300);
+    sb.onclick=async ev=>{ev.stopPropagation();const pr=ip.value.trim(),ms=box.querySelector('#sk9m').value.trim(),er=box.querySelector('#sk9e');if(!pr||!(+pr>=0)){er.textContent='✏️ Scrivi quanti euro vuoi sul conto.';ip.focus();return}
+      sb.disabled=true;sb.textContent='⏳ Invio…';try{const db=await nm9Db();const d={tipo:'salta5',nome:String(a.n).slice(0,40),acc:a.fb?'u':'n',id:String(a.fb?a.uid||'':a.reg||'').slice(0,80),prezzo:(Math.round(+pr)+' €').slice(0,30),creato:firebase.firestore.FieldValue.serverTimestamp(),letto:false};if(ms)d.msg=ms.slice(0,300);
         await nm9T(db.collection('richieste').add(d),8000);try{localStorage.setItem('vita_sk9req_'+(a.uid||a.reg||a.n),String(Date.now()))}catch(e){}ask()}
       catch(e){sb.disabled=false;sb.textContent='📩 Invia la richiesta';er.textContent='⚠️ Non sono riuscito a inviarla. Controlla internet e riprova.'}}};
-  sk9Has().then(ok=>{if(!$('sk9'))return;if(!ok)return ask();
-    box.innerHTML=S.age<5?`<p class="ml"><b>✅ Il tuo account ha la funzione!</b></p><button type="button" class="go" data-sk9go>⏩ Salta a 5 anni</button>`:`<p class="ml"><b>✅ Il tuo account ha la funzione!</b></p><p>Hai già ${S.age} anni: la potrai usare nella tua prossima vita, appena nasci.</p>`;
-    const g=box.querySelector('[data-sk9go]');if(g)g.onclick=ev=>{ev.stopPropagation();try{setAge(5);add('fel',5);save();updateHud();renderModal();e.remove();toast('⏩ Hai saltato i primi 5 anni: adesso hai 5 anni e vai all\'asilo!')}catch(err){}}}).catch(()=>{if($('sk9'))ask()})}
+  sk9Has().then(ok=>{if(!$('sk9'))return;if(!ok)return ask();const soldi=ok.soldi||0;
+    box.innerHTML=S.age<5?`<p class="ml"><b>✅ Il tuo account ha la funzione!</b></p>${soldi?`<p>A 5 anni avrai <b>${soldi.toLocaleString('it-IT')} €</b> sul conto in banca.</p>`:''}<button type="button" class="go" data-sk9go>⏩ Salta a 5 anni</button>`:`<p class="ml"><b>✅ Il tuo account ha la funzione!</b></p><p>Hai già ${S.age} anni: la potrai usare nella tua prossima vita, appena nasci.</p>`;
+    const g=box.querySelector('[data-sk9go]');if(g)g.onclick=ev=>{ev.stopPropagation();try{setAge(5);add('fel',5);if(soldi)S.bank=soldi;save();updateHud();renderModal();e.remove();toast('⏩ Hai saltato i primi 5 anni: adesso hai 5 anni e vai all\'asilo!'+(soldi?' Sul conto hai '+soldi.toLocaleString('it-IT')+' €! 🏦':''))}catch(err){}}}).catch(()=>{if($('sk9'))ask()})}
 {const st=document.createElement('style');st.textContent=`#sk9{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);display:grid;place-items:center;padding:16px}
 #sk9 .in{max-width:380px;width:100%;max-height:92vh;overflow:auto;box-sizing:border-box;background:#06110b;color:#eafff2;border:2px solid var(--neon,#3fd98a);border-radius:20px;padding:20px;text-align:center;display:flex;flex-direction:column;gap:10px;font-size:16px}
 #sk9 #sk9s{display:flex;flex-direction:column;gap:10px}#sk9 h2{margin:0;font-size:22px}#sk9 p{margin:0;line-height:1.4}#sk9 .ml{font-size:17px;word-break:break-all;color:var(--neon,#3fd98a)}
 #sk9 .go,#sk9 button{display:block;border-radius:14px;padding:12px;font:inherit;font-weight:800;cursor:pointer;text-decoration:none;border:1.5px solid var(--neon,#3fd98a);background:transparent;color:#eafff2}
 #sk9 input,#sk9 textarea{font:inherit;font-size:16px;padding:10px 12px;border-radius:12px;border:1.5px solid var(--neon,#3fd98a);background:#050a07;color:#eafff2;-webkit-user-select:text;user-select:text;resize:none}#sk9 .sm{font-size:14px;color:#ffb3b3;min-height:0}
+#sk9 .cv9{max-height:240px;overflow:auto;display:flex;flex-direction:column;gap:6px;text-align:left}#sk9 .cv9 div{padding:8px 11px;border-radius:14px;max-width:85%;white-space:pre-wrap;word-break:break-word;font-size:15px}#sk9 .cv9 .io{align-self:flex-end;background:#0f3a24}#sk9 .cv9 .lui{align-self:flex-start;background:#1b2a22;border:1px solid var(--neon,#3fd98a)}#sk9 .cv9 b{display:block;font-size:12px;color:var(--neon,#3fd98a)}
 #sk9 .go{background:var(--neon,#3fd98a);color:#021008}`;document.head.appendChild(st)}
 // appena nasci (una volta per vita)
 {const _sg=startGame;startGame=function(){const r=_sg.apply(this,arguments);try{if(S&&S.age<1&&!S.sk9){S.sk9=1;setTimeout(()=>{try{if(S&&S.age<1&&!ui.result)sk9Open()}catch(e){}},1800)}}catch(e){}return r}}
 // nelle Impostazioni
 {const _pr=phRender;phRender=function(){const r=_pr.apply(this,arguments);try{if(PH9.app==='set'){const sc=document.querySelector('#ph9 .scr');if(sc&&!$('sk9b')){const b=document.createElement('button');b.id='sk9b';b.className='li9';
   b.innerHTML='<span class="av9">⏩</span><span class="tx"><b>Salta i primi 5 anni</b><small>Funzione speciale · tocca per saperne di più</small></span>';b.onclick=ev=>{ev.stopPropagation();sk9Open()};sc.insertBefore(b,sc.firstChild)}}}catch(e){}return r}}
-// ✉️ Scrivici: domande, idee, cose da migliorare → arrivano nella Posta dell'app account
-function sk9Msg(){if($('sk9')||!S)return;const e=document.createElement('div');e.id='sk9';const a=sk9Acc();
+// ✉️ Scrivici: chat con chi ha creato il gioco. I messaggi vanno nella Posta dell'app account; le risposte arrivano in risposte/{acc_id}
+const PM9={m:[],codice:'13052013',t:0};
+function pm9Key(){const a=sk9Acc();if(a&&a.fb&&a.uid)return {acc:'u',id:a.uid,n:a.n};if(a&&a.reg)return {acc:'n',id:a.reg,n:a.n};let d='x';try{d=localStorage.getItem('vita_dev9');if(!d){d=Math.random().toString(36).slice(2,12);localStorage.setItem('vita_dev9',d)}}catch(e){}return {acc:'d',id:d,n:a?a.n:(S&&S.name)||'Senza account'}}
+const pm9LS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}};
+function pm9On(){return pm9LS('vita_pm9on')==='1'}
+function pm9Mine(){try{return JSON.parse(pm9LS('vita_pm9mine')||'[]')}catch(e){return []}}
+async function pm9Send(x){const k=pm9Key(),db=await nm9Db();const d={tipo:'chat',nome:String(k.n||'?').slice(0,40),acc:k.acc,id:String(k.id).slice(0,80),msg:String(x).slice(0,500),creato:firebase.firestore.FieldValue.serverTimestamp(),letto:false};
+  await nm9T(db.collection('richieste').add(d),8000);const L=pm9Mine();L.push({x:String(x).slice(0,500),ts:Date.now(),io:1});pm9LS('vita_pm9mine',JSON.stringify(L.slice(-40)))}
+const pm9Txt=m=>(m.si===true||m.si==='si'?'✅ Sì! ':m.si===false||m.si==='no'?'❌ No. ':'')+(m.x||'');
+async function pm9Load(quiet){if(!nm9Ok()||!navigator.onLine||!S)return;try{const db=await nm9Db();
+  try{const c=await nm9T(db.collection('config').doc('chat').get(),6000);if(c.exists&&c.data().codice)PM9.codice=String(c.data().codice).replace(/\s+/g,'')}catch(e){}
+  const k=pm9Key(),g=await nm9T(db.collection('risposte').doc(k.acc+'_'+k.id).get(),6000);PM9.m=g.exists&&Array.isArray(g.data().m)?g.data().m:[];
+  const sk='vita_pm9seen_'+k.acc+'_'+k.id,seen=+pm9LS(sk)||0,nuovi=PM9.m.length-seen;
+  if(nuovi>0){pm9LS(sk,String(PM9.m.length));if(PM9.m.length)pm9LS('vita_pm9on','1');
+    try{const cv=phConv('pm9');PM9.m.slice(seen).forEach(m=>cv.m.push({t:0,x:pm9Txt(m)}));if(cv.m.length>30)cv.m.splice(0,cv.m.length-30);cv.u=(cv.u||0)+nuovi;phBadge();save()}catch(e){}
+    if(!quiet)toast(`📨 ${nuovi>1?'Hai '+nuovi+' messaggi nuovi':'Hai un messaggio nuovo'} da chi ha creato il gioco! Leggi in ⚙️ Impostazioni → ✉️ Scrivici${typeof phOK==='function'&&phOK()?' o nel 📱 telefono':''}.`);
+    const b=$('sk9w');if(b)b.querySelector('small').textContent='📨 Hai messaggi nuovi!'}}catch(e){}}
+setTimeout(()=>{pm9Load();setInterval(()=>{if(!document.hidden)pm9Load()},180000)},8000);
+function sk9Msg(){if($('sk9')||!S)return;const e=document.createElement('div');e.id='sk9';
   e.innerHTML=`<div class="in" role="dialog" aria-label="Scrivici"><div style="font-size:44px">✉️</div><h2>Scrivici!</h2><div id="sk9s">
-  <p>Hai una domanda, un'idea o qualcosa da migliorare nel gioco? Scrivila qui: la leggiamo tutta!</p>
-  <textarea id="sk9m" maxlength="500" rows="4" placeholder="Scrivi qui il tuo messaggio…" aria-label="Messaggio"></textarea>
+  <p>Hai una domanda, un'idea o qualcosa da migliorare nel gioco? Scrivila qui: la leggiamo tutta, e la risposta arriva qui!</p><div class="cv9" id="sk9c"></div>
+  <textarea id="sk9m" maxlength="500" rows="3" placeholder="Scrivi qui il tuo messaggio…" aria-label="Messaggio"></textarea>
   <button type="button" class="go" data-sk9send>📩 Invia</button><p id="sk9e" class="sm"></p></div><button type="button" data-x>Chiudi</button></div>`;
   e.addEventListener('click',ev=>{if(ev.target===e||ev.target.closest('[data-x]'))e.remove()});e.addEventListener('keydown',ev=>{ev.stopPropagation();if(ev.key==='Escape')e.remove()});
-  document.body.appendChild(e);const box=e.querySelector('#sk9s'),ta=box.querySelector('#sk9m'),sb=box.querySelector('[data-sk9send]');ta.focus();
+  document.body.appendChild(e);const box=e.querySelector('#sk9s'),ta=box.querySelector('#sk9m'),sb=box.querySelector('[data-sk9send]'),cv=box.querySelector('#sk9c');
+  const draw=()=>{const L=[...pm9Mine(),...PM9.m.map(m=>({x:pm9Txt(m),ts:m.ts||0}))].sort((a,b)=>a.ts-b.ts).slice(-20);cv.hidden=!L.length;
+    cv.innerHTML=L.map(m=>`<div class="${m.io?'io':'lui'}">${m.io?'':'<b>👑 Il creatore del gioco</b>'}${esc(m.x)}</div>`).join('');cv.scrollTop=cv.scrollHeight};
+  draw();pm9Load(true).then(()=>{if($('sk9c'))draw()});const b=$('sk9w');if(b)b.querySelector('small').textContent='Domande, idee o cose da migliorare';
   sb.onclick=async ev=>{ev.stopPropagation();const ms=ta.value.trim(),er=box.querySelector('#sk9e');if(ms.length<2){er.textContent='✏️ Scrivi il tuo messaggio.';ta.focus();return}
-    sb.disabled=true;sb.textContent='⏳ Invio…';try{const db=await nm9Db();const d={tipo:'messaggio',nome:String(a?a.n:'Senza account').slice(0,40),acc:a?(a.fb?'u':'n'):'-',id:String(a?(a.fb?a.uid||'':a.reg||''):'').slice(0,80),msg:ms.slice(0,500),creato:firebase.firestore.FieldValue.serverTimestamp(),letto:false};
-      await nm9T(db.collection('richieste').add(d),8000);box.innerHTML='<p class="ml"><b>✅ Messaggio inviato!</b></p><p>Grazie! Lo leggeremo presto. 😊</p>'}
+    sb.disabled=true;sb.textContent='⏳ Invio…';try{await pm9Send(ms);ta.value='';er.textContent='';sb.disabled=false;sb.textContent='📩 Invia';draw();toast('✅ Messaggio inviato! Grazie 😊')}
     catch(err){sb.disabled=false;sb.textContent='📩 Invia';er.textContent='⚠️ Non sono riuscito a inviarlo. Controlla internet e riprova.'}}}
+// il codice segreto detto alla mamma (o al papà) apre la chat diretta nel telefono
+const pm9Code=raw=>String(raw||'').replace(/[\s.\/-]+/g,'')===PM9.codice;
+function pm9Unlock(){const was=pm9On();pm9LS('vita_pm9on','1');try{const cv=phConv('pm9');if(!cv.m.length){cv.m.push({t:0,x:'Ciao! 👑 Sono chi ha creato il Gioco della Vita. Scrivimi qui quello che vuoi: ti rispondo appena posso!'});cv.u=(cv.u||0)+1;phBadge();save()}}catch(e){}return was}
+{const _rp=reply;reply=function(n,raw){try{if(n&&(n.role==='mamma'||n.role==='papa')&&pm9Code(raw)){pm9Unlock();const tel=typeof phOK==='function'&&phOK(),m=n.role==='mamma';
+  return {r:`🤫 Conosci il numero segreto! Ecco, ${tel?'adesso nel tuo 📱 telefono c\'è «👑 Il creatore del gioco»: scrivigli quando vuoi, ti risponde davvero!':'quando avrai il telefono troverai «👑 Il creatore del gioco». Intanto puoi scrivergli da ⚙️ Impostazioni → ✉️ Scrivici!'} ${m?'Mi raccomando, sii gentile! 😊':'Mi raccomando, educazione! 😉'}`}}}catch(e){}return _rp.apply(this,arguments)}}
+{const _pc=phContacts;phContacts=function(){const L=_pc.apply(this,arguments);try{if(pm9On()&&!L.some(c=>c.id==='pm9'))L.unshift({id:'pm9',ic:'👑',rol:'Il creatore del gioco',nm:'Chat diretta'})}catch(e){}return L}}
+{const _pr9=phReply;phReply=function(id,v){if(id==='pm9'){pm9Send(v).catch(()=>{});return '✓ Messaggio arrivato! Ti rispondo appena posso. 👑'}
+  if((id==='mamma'||id==='papa')&&pm9Code(v)){pm9Unlock();return '🤫 Numero segreto giusto! Guarda nei contatti: c\'è «👑 Il creatore del gioco». Scrivigli pure!'}return _pr9.apply(this,arguments)}}
+{const _pp=phPool;phPool=function(c){if(c&&c.id==='pm9')return [];return _pp.apply(this,arguments)}}
 {const _pr=phRender;phRender=function(){const r=_pr.apply(this,arguments);try{if(PH9.app==='set'){const sc=document.querySelector('#ph9 .scr');if(sc&&!$('sk9w')){const b=document.createElement('button');b.id='sk9w';b.className='li9';
   b.innerHTML='<span class="av9">✉️</span><span class="tx"><b>Scrivici</b><small>Domande, idee o cose da migliorare</small></span>';b.onclick=ev=>{ev.stopPropagation();sk9Msg()};const s5=$('sk9b');s5?s5.after(b):sc.insertBefore(b,sc.firstChild)}}}catch(e){}return r}}
+/* v85h: ⋯ sui contatti per cambiare il nome */
+function nm9Get(id){return S&&S.ph9nm&&S.ph9nm[id]||''}
+{const _pc=phContacts;phContacts=function(){const L=_pc.apply(this,arguments);return L.map(c=>{const n=nm9Get(c.id);return n?Object.assign({},c,{rol:n,nm:c.rol+(c.nm&&c.nm!==c.rol?' · '+c.nm:''),rol0:c.rol}):c})}}
+function nm9Menu(id){const c=phContacts().find(q=>q.id===id);if(!c)return;const ph=$('ph9');if(!ph)return;const o=document.createElement('div');o.id='nm9';
+  o.innerHTML=`<div class="nm9b"><b>${c.ic} ${esc(c.rol)}</b><small>✏️ Cambia nome</small><input id="nm9i" maxlength="24" autocomplete="off" value="${esc(nm9Get(id))}" placeholder="${esc(c.rol0||c.rol)}"><div class="nm9r"><button data-n9="ok" class="ok">💾 Salva</button>${nm9Get(id)?'<button data-n9="del">↩️ Nome originale</button>':''}<button data-n9="no">Annulla</button></div></div>`;
+  o.addEventListener('click',ev=>{ev.stopPropagation();const k=ev.target.closest('[data-n9]');if(ev.target===o||(k&&k.dataset.n9==='no'))return o.remove();if(!k)return;S.ph9nm=S.ph9nm||{};
+    if(k.dataset.n9==='ok'){const v=$('nm9i').value.trim().slice(0,24);if(v)S.ph9nm[id]=v;else delete S.ph9nm[id];toast(v?'✏️ Ora si chiama «'+v+'»':'↩️ Nome originale')}else{delete S.ph9nm[id];toast('↩️ Nome originale')}
+    try{save()}catch(e){}o.remove();phRender()});
+  ph.appendChild(o);setTimeout(()=>{const i=$('nm9i');if(i){i.focus();i.select()}},30);$('nm9i').addEventListener('keydown',e=>{if(e.key==='Enter')o.querySelector('[data-n9="ok"]').click()})}
+{const _pr=phRender;phRender=function(){const r=_pr.apply(this,arguments);try{const ph=$('ph9');if(!ph)return r;
+  ph.querySelectorAll('.li9[data-cv],.li9[data-call]').forEach(b=>{if(b.querySelector('.dt9m'))return;const id=b.dataset.cv||b.dataset.call;const d=document.createElement('span');d.className='dt9m';d.setAttribute('role','button');d.setAttribute('aria-label','Altre opzioni');d.textContent='⋯';
+    d.addEventListener('click',ev=>{ev.stopPropagation();ev.preventDefault();nm9Menu(id)});b.appendChild(d)});
+  if(PH9.app==='msg'&&PH9.conv){const br=ph.querySelector('.bar9');if(br&&!br.querySelector('.dt9m')){const d=document.createElement('button');d.className='bk dt9m';d.setAttribute('aria-label','Altre opzioni');d.textContent='⋯';const id=PH9.conv;d.addEventListener('click',ev=>{ev.stopPropagation();nm9Menu(id)});const x=br.querySelector('[data-ph="close"]');br.insertBefore(d,x)}}}catch(e){}return r}}
+{const st=document.createElement('style');st.textContent=`#ph9 .dt9m{margin-left:auto;padding:4px 10px;border-radius:12px;font:900 20px/1 var(--f-body);color:#eafff2;cursor:pointer;flex:none}#ph9 .li9 .dt9m:hover{background:#13241a}#ph9 .bar9 .dt9m{margin-left:0}
+#nm9{position:absolute;inset:0;z-index:50;background:rgba(0,0,0,.6);display:grid;place-items:center;padding:16px}#nm9 .nm9b{background:#0b1610;border:1.5px solid var(--neon);border-radius:18px;padding:16px;width:100%;max-width:300px;display:flex;flex-direction:column;gap:8px;color:#eafff2}#nm9 small{color:var(--soft);font-weight:700}#nm9 input{padding:10px;border-radius:12px;border:1.5px solid rgba(63,217,138,.4);background:#13241a;color:#fff;font-size:16px}#nm9 .nm9r{display:flex;gap:6px;flex-wrap:wrap}#nm9 .nm9r button{flex:1;padding:9px;border-radius:12px;border:1.5px solid rgba(63,217,138,.4);background:#13241a;color:#eafff2;font-weight:800;cursor:pointer}#nm9 .nm9r .ok{background:var(--neon);color:#021008}`;document.head.appendChild(st)}
