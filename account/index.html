@@ -33,7 +33,21 @@ button{font:inherit;font-weight:800;border-radius:12px;padding:9px 14px;border:1
 .pn{display:none}.pn.on{display:block}.pn.dl{animation:pnL .25s ease}.pn.dr{animation:pnR .25s ease}@keyframes pnL{from{opacity:.3;transform:translateX(40px)}}@keyframes pnR{from{opacity:.3;transform:translateX(-40px)}}
 .tabp .md{position:static;inset:auto;background:none;display:block;padding:0;z-index:auto}.tabp .md>.sh{max-width:100%!important;width:auto!important;max-height:none;overflow-x:auto;overflow-y:visible;border-radius:18px;margin:0;animation:none}.pn{max-width:100%;overflow-x:clip}.tabp #x{display:none}
 @media (prefers-reduced-motion:reduce){.pn.dl,.pn.dr{animation:none}}
-</style></head><body><div class="w">
+html.lk .w{visibility:hidden}
+.w{zoom:var(--zz,1)}
+html[data-tema=chiaro]{--bg:#f2f8f4;--card:#ffffff;--card2:#e5f3ea;--ink:#0b2215;--soft:#4f6b5b;--line:#cfe2d6;--acc:#13a456;--acc2:#bfe9d1;--bad:#d4364a;--gold:#b88a00}
+@media (prefers-color-scheme:light){html[data-tema=auto]{--bg:#f2f8f4;--card:#ffffff;--card2:#e5f3ea;--ink:#0b2215;--soft:#4f6b5b;--line:#cfe2d6;--acc:#13a456;--acc2:#bfe9d1;--bad:#d4364a;--gold:#b88a00}}
+#gear{padding:8px 11px;font-size:20px;line-height:1;border-radius:12px}
+#lk{position:fixed;inset:0;z-index:99;background:var(--bg);display:grid;place-items:center;padding:16px}.lkb{width:min(320px,100%);text-align:center}.lkb img{width:64px;height:64px;border-radius:16px}.lkb h2{margin:10px 0 2px}.lkb p{color:var(--soft);font-weight:700;margin:0 0 14px;min-height:21px}
+.lkd{display:flex;justify-content:center;gap:12px;margin-bottom:18px}.lkd i{width:14px;height:14px;border-radius:50%;border:2px solid var(--acc)}.lkd i.on{background:var(--acc)}
+.lkp{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.lkp button{height:62px;border-radius:50%;width:62px;margin:auto;font-size:24px;padding:0}.lkbio{width:100%;margin-top:16px}.lkfg{background:none;border:0;color:var(--soft);font-weight:700;margin-top:10px;text-decoration:underline}
+.sh9{animation:sh9 .35s}@keyframes sh9{20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
+.ibx{background:var(--card2);border-radius:16px;padding:12px;margin:10px 0}.ibx>b{display:block}.ibx small{display:block;color:var(--soft);font-weight:600}
+.seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.seg button{padding:8px 12px;border-radius:999px;font-weight:700}.seg button[aria-pressed=true]{background:var(--acc);color:#021008;border-color:var(--acc)}
+.row9{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.row9 .dang{color:var(--bad)}
+.sw9{display:flex;align-items:center;gap:8px;margin-top:8px;font-weight:700}.sw9 input{width:20px;height:20px;accent-color:var(--acc)}
+#msg9{position:fixed;left:50%;bottom:24px;transform:translate(-50%,40px);opacity:0;transition:.25s;z-index:100;background:var(--card2);border:1px solid var(--acc);color:var(--ink);padding:10px 16px;border-radius:14px;font-weight:700;max-width:90vw;text-align:center}#msg9.on{opacity:1;transform:translate(-50%,0)}
+</style><script>try{var L=JSON.parse(localStorage.getItem('acc_lock')||'null');if(L&&L.pin)document.documentElement.classList.add('lk');var I=JSON.parse(localStorage.getItem('acc_imp')||'{}');if(I&&I.tema)document.documentElement.dataset.tema=I.tema}catch(e){}</script></head><body><div class="w">
 <header><img src="icona-192.png" alt=""><div><h1>Account del gioco</h1><small>Gioco della Vita PM</small></div><span class="sp"></span><span class="live" id="lv" hidden><i></i>dal vivo</span></header>
 <div id="app"><div class="card">⏳ Carico…</div></div></div>
 <script src="../fb/firebase-app-compat.js"></script><script src="../fb/firebase-auth-compat.js"></script><script src="../fb/firebase-firestore-compat.js"></script>
@@ -348,4 +362,79 @@ A.onAuthStateChanged(u=>{if(unsub){unsub();unsub=null}if(unsubN){unsubN();unsubN
   unsub=D.collection('utenti').onSnapshot(s=>{rows=s.docs.map(d=>({id:d.id,...d.data()}));$('#lv').hidden=false;draw()},
     e=>{$('#lv').hidden=true;app.innerHTML=`<div class="card"><p class="err">Non hai il permesso di vedere gli account.</p><p>Sei entrata come <b>${esc(u.email)}</b>. Devi entrare con <b>piemastro13@gmail.com</b>.</p><button id="o2">Esci e cambia account</button></div>`;$('#o2').onclick=()=>A.signOut()})});
 setInterval(()=>{if(rows.length&&$('#ls'))draw()},60000);
+</script>
+<script>
+// ⚙️ Impostazioni + 🔒 blocco app (codice, impronta o viso)
+const IMP=(()=>{try{return JSON.parse(localStorage.getItem('acc_imp')||'{}')||{}}catch(e){return {}}})();
+const impSave=()=>{try{localStorage.setItem('acc_imp',JSON.stringify(IMP))}catch(e){}};
+const LK=()=>{try{return JSON.parse(localStorage.getItem('acc_lock')||'null')}catch(e){return null}};
+const lkSave=v=>{try{v?localStorage.setItem('acc_lock',JSON.stringify(v)):localStorage.removeItem('acc_lock')}catch(e){}};
+const b64=a=>btoa(String.fromCharCode(...new Uint8Array(a))),ub64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function lkHash(pin,salt){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(salt+':'+pin));return b64(d)}
+async function bioOk(){try{return !!(window.PublicKeyCredential&&await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable())}catch(e){return false}}
+async function bioNew(){const id=crypto.getRandomValues(new Uint8Array(16));const c=await navigator.credentials.create({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),rp:{name:'Account PM'},user:{id,name:'amministratrice',displayName:'Account PM'},pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required',residentKey:'discouraged'},timeout:60000,attestation:'none'}});return b64(c.rawId)}
+async function bioCheck(id){const c=await navigator.credentials.get({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),allowCredentials:[{type:'public-key',id:ub64(id)}],userVerification:'required',timeout:60000}});return !!c}
+function msg9(t){let e=$('#msg9');if(!e){e=document.createElement('div');e.id='msg9';document.body.appendChild(e)}e.textContent=t;e.className='on';clearTimeout(e._t);e._t=setTimeout(()=>e.className='',2600)}
+// --- schermata di blocco
+let lkOn=false,lkFail=0,lkWait=0;
+function lockShow(){const L=LK();if(!L||!L.pin){document.documentElement.classList.remove('lk');return}if(lkOn)return;lkOn=true;document.documentElement.classList.add('lk');document.querySelectorAll('body>.md').forEach(m=>m.style.visibility='hidden');
+  const e=document.createElement('div');e.id='lk';let v='';
+  e.innerHTML=`<div class="lkb"><img src="icona-192.png" alt=""><h2>🔒 App bloccata</h2><p id="lkt">Scrivi il codice per entrare</p><div class="lkd" id="lkd"></div>
+   <div class="lkp">${[1,2,3,4,5,6,7,8,9,'bio',0,'del'].map(k=>k==='bio'?(L.bio?'<button data-k="bio" aria-label="Impronta o viso">👆</button>':'<span></span>'):`<button data-k="${k}" ${k==='del'?'aria-label="Cancella"':''}>${k==='del'?'⌫':k}</button>`).join('')}</div>
+   ${L.bio?'<button class="lkbio" data-k="bio">👆 Usa impronta o viso</button>':''}<button class="lkfg" data-k="fg">Ho dimenticato il codice</button></div>`;
+  document.body.appendChild(e);const dots=()=>{e.querySelector('#lkd').innerHTML=Array.from({length:Math.max(4,L.n||4)},(_,i)=>`<i class="${i<v.length?'on':''}"></i>`).join('')};dots();
+  const ok=()=>{lkOn=false;lkFail=0;e.remove();document.documentElement.classList.remove('lk');document.querySelectorAll('body>.md').forEach(m=>m.style.visibility='');IMP.t0=Date.now()};
+  const bio=async()=>{try{if(await bioCheck(L.bio))ok()}catch(err){e.querySelector('#lkt').textContent='Impronta o viso non riconosciuti: scrivi il codice'}};
+  const tryPin=async()=>{if(Date.now()<lkWait){e.querySelector('#lkt').textContent='Aspetta '+Math.ceil((lkWait-Date.now())/1000)+' secondi…';v='';dots();return}
+    if(await lkHash(v,L.salt)===L.pin)return ok();lkFail++;v='';dots();const b=e.querySelector('.lkb');b.classList.remove('sh9');void b.offsetWidth;b.classList.add('sh9');try{navigator.vibrate&&navigator.vibrate(150)}catch(x){}
+    if(lkFail>=5){lkWait=Date.now()+30000;lkFail=0;e.querySelector('#lkt').textContent='Troppi tentativi: aspetta 30 secondi'}else e.querySelector('#lkt').textContent='Codice sbagliato, riprova'};
+  e.addEventListener('click',ev=>{const b=ev.target.closest('[data-k]');if(!b)return;const k=b.dataset.k;
+    if(k==='bio')return bio();if(k==='fg'){if(confirm('Per togliere il blocco devi uscire e rientrare con l\'account Google dell\'amministratrice. Vuoi farlo?')){lkSave(null);try{A.signOut()}catch(x){}ok()}return}
+    if(k==='del'){v=v.slice(0,-1);return dots()}if(v.length>=6)return;v+=k;dots();if(v.length===(L.n||4))tryPin()});
+  addEventListener('keydown',function kd(ev){if(!lkOn){removeEventListener('keydown',kd);return}if(/^[0-9]$/.test(ev.key)){const b=e.querySelector(`[data-k="${ev.key}"]`);b&&b.click()}else if(ev.key==='Backspace'){e.querySelector('[data-k="del"]').click()}});
+  if(L.bio)setTimeout(bio,350)}
+document.addEventListener('visibilitychange',()=>{const L=LK();if(!L||!L.pin)return;if(document.hidden){IMP.t0=Date.now()}else{const dopo=(L.dopo==null?1:L.dopo)*60000;if(!IMP.t0||Date.now()-IMP.t0>=dopo)lockShow()}});
+// --- tema e testo
+function impApply(){const r=document.documentElement;r.dataset.tema=IMP.tema||'scuro';r.style.setProperty('--zz',IMP.testo||1)}
+// --- avvisi posta: numero sull'icona dell'app e vibrazione
+let impLast=null;setInterval(()=>{try{const n=(typeof posta!=='undefined'?posta:[]).filter(x=>!x.letto).length;if(navigator.setAppBadge&&IMP.badge!==false){n?navigator.setAppBadge(n):navigator.clearAppBadge()}
+  if(impLast!==null&&n>impLast&&IMP.vibra!==false){try{navigator.vibrate&&navigator.vibrate([120,80,120])}catch(e){}msg9('📩 È arrivato un messaggio nuovo nella Posta')}impLast=n}catch(e){}},4000);
+// --- scheda all'apertura
+{const _ti=tabsInit;tabsInit=function(h){const r=_ti.apply(this,arguments);const s=+IMP.tab||0;if(s)setTimeout(()=>{try{tabGo(s)}catch(e){}},50);return r}}
+// --- la finestra delle impostazioni
+function impV(){document.querySelectorAll('body>.md.impm').forEach(x=>x.remove());const L=LK(),m=document.createElement('div');m.className='md impm';
+  const seg=(k,opts,cur)=>`<div class="seg">${opts.map(([v,t])=>`<button data-s="${k}" data-v="${v}" ${String(cur)===String(v)?'aria-pressed="true"':''}>${t}</button>`).join('')}</div>`;
+  const box=(t,s,b)=>`<div class="ibx"><b>${t}</b>${s?`<small>${s}</small>`:''}${b}</div>`;const sw=(k,on,t)=>`<label class="sw9"><input type="checkbox" data-sw="${k}" ${on?'checked':''}><span>${t}</span></label>`;
+  m.innerHTML=`<div class="sh"><div style="display:flex;justify-content:space-between;gap:10px"><div><h2>⚙️ Impostazioni</h2><div class="sub">Valgono solo su questo telefono</div></div><button id="x" style="align-self:flex-start">✕</button></div>
+   ${box('🔒 Blocco dell\'app',L&&L.pin?'✅ Attivo: per entrare serve il codice'+(L.bio?' o l\'impronta / il viso':'')+'.':'Così chi prende il tuo telefono non può aprire l\'app degli account.',
+     L&&L.pin?`<div class="row9"><button data-a="bio">${L.bio?'👆 Impronta / viso: attivi · togli':'👆 Usa anche impronta o viso'}</button><button data-a="pin">🔢 Cambia codice</button><button data-a="now">🔒 Blocca adesso</button><button data-a="off" class="dang">🔓 Togli il blocco</button></div>
+       <small style="margin-top:8px">Blocca quando esci dall'app da:</small>${seg('dopo',[[0,'Subito'],[1,'1 min'],[5,'5 min'],[15,'15 min']],L.dopo==null?1:L.dopo)}`
+     :`<button class="p" data-a="pin" style="width:100%;margin-top:8px">🔒 Metti il blocco (codice + impronta o viso)</button>`)}
+   <div id="pinf"></div>
+   ${box('📑 Quando apri l\'app, vai su','',seg('tab',TABS.map((t,i)=>[i,t[0]+' '+t[1]]),+IMP.tab||0))}
+   ${box('🌗 Colori','',seg('tema',[['auto','📱 Come il telefono'],['scuro','🌙 Scuro'],['chiaro','☀️ Chiaro']],IMP.tema||'scuro'))}
+   ${box('🔤 Grandezza delle scritte','',seg('testo',[[1,'Normale'],[1.12,'Grande'],[1.25,'Molto grande']],IMP.testo||1))}
+   ${box('🔔 Avvisi della Posta','Quando arriva un messaggio nuovo dal gioco, mentre l\'app è aperta',sw('vibra',IMP.vibra!==false,'📳 Vibra e avvisa')+sw('badge',IMP.badge!==false,'🔴 Numero dei messaggi sull\'icona dell\'app'))}
+   ${box('👤 Account','Entrata come '+esc(A.currentUser&&A.currentUser.email||'—'),`<button data-a="out" style="margin-top:8px">🚪 Esci</button>`)}
+   ${box('ℹ️ Informazioni','App degli account del Gioco della Vita PM',`<small style="margin-top:6px">Versione ${esc(IMP_VER)} · <a href="#" data-a="upd" style="color:var(--acc)">🔄 Cerca aggiornamenti</a></small>`)}</div>`;
+  document.body.appendChild(m);m.onclick=e=>{if(e.target===m)m.remove()};m.querySelector('#x').onclick=()=>m.remove();
+  m.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{const k=b.dataset.s,v=b.dataset.v;if(k==='dopo'){const L2=LK();L2.dopo=+v;lkSave(L2)}else{IMP[k]=k==='tema'?v:+v;impSave();impApply()}impV()});
+  m.querySelectorAll('[data-sw]').forEach(c=>c.onchange=()=>{IMP[c.dataset.sw]=c.checked;impSave();if(c.dataset.sw==='badge'&&!c.checked&&navigator.clearAppBadge)navigator.clearAppBadge()});
+  m.querySelectorAll('[data-a]').forEach(b=>b.onclick=async ev=>{ev.preventDefault();const a=b.dataset.a,L2=LK();
+    if(a==='out'){if(confirm('Vuoi uscire dall\'account?')){m.remove();A.signOut()}}
+    else if(a==='upd'){try{const r=await navigator.serviceWorker.getRegistration();if(r)await r.update()}catch(e){}msg9('🔄 Fatto! Se c\'è una versione nuova, la vedi alla prossima apertura.')}
+    else if(a==='now'){m.remove();lockShow()}
+    else if(a==='off'){if(confirm('Togliere il blocco? Chi prende il telefono potrà aprire l\'app.')){lkSave(null);msg9('🔓 Blocco tolto');impV()}}
+    else if(a==='bio'){if(L2.bio){L2.bio=null;lkSave(L2);msg9('👆 Impronta / viso tolti');return impV()}
+      if(!await bioOk())return alert('Questo telefono non permette di usare impronta o viso nel browser. Puoi usare il codice.');
+      try{L2.bio=await bioNew();lkSave(L2);msg9('👆 Fatto! Ora puoi entrare con impronta o viso')}catch(e){alert('Non ci sono riuscito: '+(e&&e.message||e))}impV()}
+    else if(a==='pin')pinForm(m)})}
+function pinForm(m){const f=m.querySelector('#pinf');f.innerHTML=`<div class="ibx ed"><b>🔢 Scegli il codice</b><small>Da 4 a 6 numeri. Non dirlo a nessuno!</small><label>Codice</label><input id="p1" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password"><label>Scrivilo di nuovo</label><input id="p2" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password"><button class="p" id="pok" style="width:100%;margin-top:10px">💾 Salva il codice</button><p class="sub" id="pms"></p></div>`;
+  f.querySelector('#p1').focus();f.scrollIntoView({block:'nearest'});
+  f.querySelector('#pok').onclick=async()=>{const a=f.querySelector('#p1').value.trim(),b=f.querySelector('#p2').value.trim(),ms_=f.querySelector('#pms');if(!/^\d{4,6}$/.test(a))return ms_.textContent='Il codice deve avere da 4 a 6 numeri.';if(a!==b)return ms_.textContent='I due codici non sono uguali.';
+    const old=LK()||{},salt=b64(crypto.getRandomValues(new Uint8Array(12)));lkSave({pin:await lkHash(a,salt),salt,n:a.length,bio:old.bio||null,dopo:old.dopo==null?1:old.dopo});IMP.t0=Date.now();msg9('🔒 Codice salvato!');
+    if(!old.pin&&await bioOk()&&confirm('Vuoi entrare anche con l\'impronta del dito o con il viso?')){try{const L2=LK();L2.bio=await bioNew();lkSave(L2);msg9('👆 Fatto! Ora puoi entrare con impronta o viso')}catch(e){}}impV()}}
+const IMP_VER='15';impApply();
+{const h=document.querySelector('header');if(h){const g=document.createElement('button');g.id='gear';g.setAttribute('aria-label','Impostazioni');g.textContent='⚙️';g.onclick=impV;h.appendChild(g)}}
+lockShow();
 </script></body></html>
