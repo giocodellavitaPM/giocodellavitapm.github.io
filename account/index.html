@@ -398,7 +398,10 @@ document.addEventListener('visibilitychange',()=>{const L=LK();if(!L||!L.pin)ret
 function impApply(){const r=document.documentElement;r.dataset.tema=IMP.tema||'scuro';r.style.setProperty('--zz',IMP.testo||1)}
 // --- avvisi posta: numero sull'icona dell'app e vibrazione
 let impLast=null;setInterval(()=>{try{const n=(typeof posta!=='undefined'?posta:[]).filter(x=>!x.letto).length;if(navigator.setAppBadge&&IMP.badge!==false){n?navigator.setAppBadge(n):navigator.clearAppBadge()}
-  if(impLast!==null&&n>impLast&&IMP.vibra!==false){try{navigator.vibrate&&navigator.vibrate([120,80,120])}catch(e){}msg9('📩 È arrivato un messaggio nuovo nella Posta')}impLast=n}catch(e){}},4000);
+  if(impLast!==null&&n>impLast&&IMP.vibra!==false){try{navigator.vibrate&&navigator.vibrate([120,80,120])}catch(e){}msg9('📩 È arrivato un messaggio nuovo nella Posta')}if(impLast!==null&&n>impLast)impNotif(n-impLast);impLast=n}catch(e){}},4000);
+function impNotif(k){try{if(!IMP.notif||!('Notification' in window)||Notification.permission!=='granted')return;const x=[...posta].filter(z=>!z.letto).sort((a,b)=>ms(b.creato)-ms(a.creato))[0]||{};
+  const t=k>1?'📩 '+k+' messaggi nuovi nella Posta':'📩 Messaggio nuovo da '+(x.nome||'un giocatore'),body=x.tipo==='salta5'?'⏩ Vuole saltare i primi 5 anni':(x.msg?String(x.msg).slice(0,120):'Apri la Posta per leggerlo');
+  navigator.serviceWorker.ready.then(r=>r.showNotification(t,{body,icon:'icona-192.png',badge:'icona-192.png',tag:'posta',renotify:true})).catch(()=>{try{new Notification(t,{body,icon:'icona-192.png'})}catch(e){}})}catch(e){}}
 // --- scheda all'apertura
 {const _ti=tabsInit;tabsInit=function(h){const r=_ti.apply(this,arguments);const s=+IMP.tab||0;if(s)setTimeout(()=>{try{tabGo(s)}catch(e){}},50);return r}}
 // --- la finestra delle impostazioni
@@ -414,12 +417,12 @@ function impV(){document.querySelectorAll('body>.md.impm').forEach(x=>x.remove()
    ${box('📑 Quando apri l\'app, vai su','',seg('tab',TABS.map((t,i)=>[i,t[0]+' '+t[1]]),+IMP.tab||0))}
    ${box('🌗 Colori','',seg('tema',[['auto','📱 Come il telefono'],['scuro','🌙 Scuro'],['chiaro','☀️ Chiaro']],IMP.tema||'scuro'))}
    ${box('🔤 Grandezza delle scritte','',seg('testo',[[1,'Normale'],[1.12,'Grande'],[1.25,'Molto grande']],IMP.testo||1))}
-   ${box('🔔 Avvisi della Posta','Quando arriva un messaggio nuovo dal gioco, mentre l\'app è aperta',sw('vibra',IMP.vibra!==false,'📳 Vibra e avvisa')+sw('badge',IMP.badge!==false,'🔴 Numero dei messaggi sull\'icona dell\'app'))}
+   ${box('🔔 Avvisi della Posta','Quando arriva un messaggio nuovo dal gioco, mentre l\'app è aperta',sw('vibra',IMP.vibra!==false,'📳 Vibra e avvisa')+sw('badge',IMP.badge!==false,'🔴 Numero dei messaggi sull\'icona dell\'app')+sw('notif',!!IMP.notif&&('Notification' in window)&&Notification.permission==='granted','🔔 Notifiche del telefono')+('Notification' in window&&Notification.permission==='denied'?'<small style="margin-top:6px">⚠️ Le notifiche sono bloccate: aprile dalle impostazioni del telefono (Notifiche → questa app).</small>':'<small style="margin-top:6px">Arrivano quando l\'app è aperta o l\'hai appena chiusa.</small>'))}
    ${box('👤 Account','Entrata come '+esc(A.currentUser&&A.currentUser.email||'—'),`<button data-a="out" style="margin-top:8px">🚪 Esci</button>`)}
    ${box('ℹ️ Informazioni','App degli account del Gioco della Vita PM',`<small style="margin-top:6px">Versione ${esc(IMP_VER)} · <a href="#" data-a="upd" style="color:var(--acc)">🔄 Cerca aggiornamenti</a></small>`)}</div>`;
   document.body.appendChild(m);m.onclick=e=>{if(e.target===m)m.remove()};m.querySelector('#x').onclick=()=>m.remove();
   m.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{const k=b.dataset.s,v=b.dataset.v;if(k==='dopo'){const L2=LK();L2.dopo=+v;lkSave(L2)}else{IMP[k]=k==='tema'?v:+v;impSave();impApply()}impV()});
-  m.querySelectorAll('[data-sw]').forEach(c=>c.onchange=()=>{IMP[c.dataset.sw]=c.checked;impSave();if(c.dataset.sw==='badge'&&!c.checked&&navigator.clearAppBadge)navigator.clearAppBadge()});
+  m.querySelectorAll('[data-sw]').forEach(c=>c.onchange=async()=>{if(c.dataset.sw==='notif'&&c.checked){if(!('Notification' in window)){c.checked=false;return alert('Questo telefono non permette le notifiche per questa app. Prova a installarla sulla schermata Home.')}const r=await Notification.requestPermission();if(r!=='granted'){c.checked=false;IMP.notif=false;impSave();return impV()}IMP.notif=true;impSave();try{(await navigator.serviceWorker.ready).showNotification('🔔 Notifiche attive!',{body:'Ti avviso qui quando arriva posta nuova dal gioco.',icon:'icona-192.png',tag:'prova'})}catch(e){}return}IMP[c.dataset.sw]=c.checked;impSave();if(c.dataset.sw==='badge'&&!c.checked&&navigator.clearAppBadge)navigator.clearAppBadge()});
   m.querySelectorAll('[data-a]').forEach(b=>b.onclick=async ev=>{ev.preventDefault();const a=b.dataset.a,L2=LK();
     if(a==='out'){if(confirm('Vuoi uscire dall\'account?')){m.remove();A.signOut()}}
     else if(a==='upd'){try{const r=await navigator.serviceWorker.getRegistration();if(r)await r.update()}catch(e){}msg9('🔄 Fatto! Se c\'è una versione nuova, la vedi alla prossima apertura.')}
@@ -434,7 +437,7 @@ function pinForm(m){const f=m.querySelector('#pinf');f.innerHTML=`<div class="ib
   f.querySelector('#pok').onclick=async()=>{const a=f.querySelector('#p1').value.trim(),b=f.querySelector('#p2').value.trim(),ms_=f.querySelector('#pms');if(!/^\d{4,6}$/.test(a))return ms_.textContent='Il codice deve avere da 4 a 6 numeri.';if(a!==b)return ms_.textContent='I due codici non sono uguali.';
     const old=LK()||{},salt=b64(crypto.getRandomValues(new Uint8Array(12)));lkSave({pin:await lkHash(a,salt),salt,n:a.length,bio:old.bio||null,dopo:old.dopo==null?1:old.dopo});IMP.t0=Date.now();msg9('🔒 Codice salvato!');
     if(!old.pin&&await bioOk()&&confirm('Vuoi entrare anche con l\'impronta del dito o con il viso?')){try{const L2=LK();L2.bio=await bioNew();lkSave(L2);msg9('👆 Fatto! Ora puoi entrare con impronta o viso')}catch(e){}}impV()}}
-const IMP_VER='15';impApply();
+const IMP_VER='16';impApply();
 {const h=document.querySelector('header');if(h){const g=document.createElement('button');g.id='gear';g.setAttribute('aria-label','Impostazioni');g.textContent='⚙️';g.onclick=impV;h.appendChild(g)}}
 lockShow();
 </script></body></html>
