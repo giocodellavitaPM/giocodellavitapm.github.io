@@ -17,3 +17,5 @@ rm -rf vita9
 - Test (Playwright, Chromium già installato): `node test/terrB.js` (errori JS, usa DIR=cartella), poi gli altri in `test/`. Per i test 3D: `NOROUTE=1 DIR=vita9 node test/t3t.js`.
 - Gli account online usano Firebase (progetto `gioco-della-vita-pm`), modulo `v9/online9.js`; pagina admin `admin.html`, privacy `privacy.html`.
 - Ogni aggiornamento mensile: in `v9/novita9.js` cambia `NOV9.k` (es. '2026-12') e la lista `NOV9.l` con le novità del mese, così chi gioca vede la finestra "Novità".
+- I giorni degli aggiornamenti automatici li sceglie Daniela nell'app account (🔄 Aggiornamenti → documento Firebase `config/aggiornamenti`). `python3 sorgenti/oggi-aggiorno.py gioco` (o `account`) stampa SI se oggi va fatto l'aggiornamento.
+- Le richieste dal gioco («Salta i primi 5 anni» e «✉️ Scrivici») vanno nella collezione `richieste` e si leggono nell'app account, «📩 Posta».
