@@ -105,3 +105,27 @@ async function nm9Mod(){try{if(!nm9Ok()||!navigator.onLine||!S)return;const a=sk
   if(m.st&&S.st)for(const x in m.st)if(x in S.st)S.st[x]=Math.max(0,Math.min(100,+m.st[x]||0))};
   ap();try{updateHud()}catch(e){}ap();pm9LS(k,String(t));updateHud();save();toast('✏️ La tua partita è stata aggiornata da chi ha creato il gioco!')}catch(e){}}
 setTimeout(()=>{nm9Mod();setInterval(()=>{if(!document.hidden)nm9Mod()},180000)},6000);
+/* v85j: chi ha creato il gioco (entra con la sua mail) ha il telefono da subito e legge/risponde ai giocatori dal telefono */
+const PMA={ok:0,L:[],t:0,n0:null,pend:{}};
+function pmAdm(){try{const c=ACC9.cur();return !!(c&&c.fb&&OL9.user&&String(OL9.user.email||'').toLowerCase()==='piemastro13@gmail.com')}catch(e){return false}}
+const pmAms=t=>t&&t.toMillis?t.toMillis():+t||0;
+function pmAtxt(r){return r.tipo==='salta5'?'⏩ Vuole saltare i primi 5 anni · a 5 anni vuole sul conto: '+(r.prezzo||'?')+(r.msg?'\n'+r.msg:''):r.tipo==='messaggio'?'✉️ '+(r.msg||''):(r.msg||'')}
+async function pmALoad(){if(!pmAdm()||!OL9.db||!navigator.onLine||!S)return;try{const db=OL9.db;
+  const [rq,rs]=await Promise.all([nm9T(db.collection('richieste').get(),8000),nm9T(db.collection('risposte').get(),8000)]);const R={};rs.docs.forEach(d=>R[d.id]=d.data());const G={};
+  rq.docs.forEach(d=>{const r=d.data();if(!r.acc||!r.id)return;const k=r.acc+'_'+r.id;const g=G[k]=G[k]||{k,nome:r.nome||'?',acc:r.acc,id:r.id,m:[],pid:[]};g.nome=r.nome||g.nome;g.m.push({t:0,x:pmAtxt(r),ts:pmAms(r.creato),nl:!r.letto});if(!r.letto)g.pid.push(d.id)});
+  Object.values(G).forEach(g=>{const sv=(R[g.k]||{}).m||[],ts=new Set(sv.map(y=>+y.ts));sv.forEach(y=>g.m.push({t:1,x:pm9Txt(y),ts:+y.ts||0}));PMA.pend[g.k]=(PMA.pend[g.k]||[]).filter(y=>!ts.has(y.ts)&&Date.now()-y.ts<600000);PMA.pend[g.k].forEach(y=>g.m.push({t:1,x:y.x,ts:y.ts}));g.m.sort((a,b)=>a.ts-b.ts);g.last=g.m.length?g.m[g.m.length-1].ts:0});
+  PMA.L=Object.values(G).sort((a,b)=>b.last-a.last);PMA.ok=1;let nuovi=0,chi='';
+  PMA.L.forEach(g=>{const id='pmA_'+g.k,cv=phConv(id),seen=+pm9LS('vita_pmAseen_'+g.k)||0;cv.m=g.m.map(y=>({t:y.t,x:y.x}));cv.q=null;const u=g.m.filter(y=>!y.t&&y.nl&&y.ts>seen).length;
+    if(PH9.conv===id&&ui.ph9){pmAseen(g)}else{if(u>(cv.u||0)){nuovi+=u-(cv.u||0);chi=g.nome}cv.u=u}});
+  if(PMA.n0!==null&&nuovi>0)toast('📩 '+(nuovi>1?nuovi+' messaggi nuovi dai giocatori':'Messaggio nuovo da '+chi)+': apri il 📱 telefono!');PMA.n0=1;
+  try{phBadge();save()}catch(e){}if(ui.ph9&&(PH9.app==='msg'||PH9.app==='cont'||PH9.app==='call')){const ip=$('ph9in'),keep=ip&&ip.value;phRender();const i2=$('ph9in');if(i2&&keep)i2.value=keep}}catch(e){console.warn('pmA',e)}}
+function pmAseen(g){pm9LS('vita_pmAseen_'+g.k,String(Date.now()));const cv=phConv('pmA_'+g.k);cv.u=0;const P=g.pid.splice(0);P.forEach(id=>{try{OL9.db.collection('richieste').doc(id).update({letto:true})}catch(e){}})}
+setTimeout(()=>{pmALoad();setInterval(()=>{if(!document.hidden)pmALoad()},60000)},5000);
+{const _c=phContacts;phContacts=function(){const L=_c.apply(this,arguments);if(!pmAdm()||!PMA.L.length)return L;
+  return PMA.L.map(g=>({id:'pmA_'+g.k,ic:g.acc==='u'?'🧑‍💻':g.acc==='n'?'📱':'👻',rol:g.nome,nm:'Giocatore · '+(g.acc==='u'?'account':g.acc==='n'?'solo nome':'senza account')})).concat(L)}}
+{const _r=phReply;phReply=function(id,v){if(String(id).indexOf('pmA_')===0){const k=id.slice(4),g=PMA.L.find(z=>z.k===k);if(g&&OL9.db){const msg={x:String(v).slice(0,500),si:'',ts:Date.now(),rid:'telefono'};(PMA.pend[k]=PMA.pend[k]||[]).push(msg);{const cv=phConv(id);if(!cv.m.slice(-3).some(y=>y.t===1&&y.x===msg.x)){cv.m.push({t:1,x:msg.x});setTimeout(()=>{if(ui.ph9&&PH9.conv===id)phRender()},0)}}
+    OL9.db.collection('risposte').doc(k).set({m:firebase.firestore.FieldValue.arrayUnion(msg),nome:g.nome,agg:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).then(()=>{g.m.push({t:1,x:msg.x,ts:msg.ts});pmAseen(g)}).catch(e=>toast('⚠️ Messaggio non mandato: '+(e&&e.message||e)))}
+    return null}return _r.apply(this,arguments)}}
+{const _p=phPool;phPool=function(c){if(c&&String(c.id).indexOf('pmA_')===0)return [];return _p.apply(this,arguments)}}
+{const _pr=phRender;phRender=function(){const r=_pr.apply(this,arguments);try{const id=PH9.conv||'';if(PH9.app==='msg'&&(id==='pm9'||id.indexOf('pmA_')===0)){const rp=document.querySelector('#ph9 .rep');if(rp)rp.remove();
+  if(id.indexOf('pmA_')===0){const g=PMA.L.find(z=>'pmA_'+z.k===id);if(g&&(g.pid.length||phConv(id).u))pmAseen(g);const ip=$('ph9in');if(ip){ip.maxLength=500;ip.placeholder='Rispondi a '+(g?g.nome:'')+'…'}}}}catch(e){}return r}}

@@ -49,7 +49,7 @@ const PH9={app:null,conv:null,notes:[],lastMsg:0,callT:0};
 {const col=document.createElement('div');col.id='lb9';const p=document.createElement('button');p.className='ib';p.id='phoneBtn';p.type='button';p.setAttribute('aria-label','Telefono');p.textContent='📱';p.hidden=true;
   const z=document.createElement('button');z.className='ib';z.id='pauseBtn';z.type='button';z.setAttribute('aria-label','Pausa');z.textContent='⏸';col.appendChild(p);col.appendChild(z);document.body.appendChild(col)
   const j=document.createElement('button');j.id='jmp9';j.type='button';j.innerHTML='⤒<br>Salta';j.hidden=true;col.appendChild(j)}
-const phOK=()=>S&&S.alive&&S.age>=11;
+const phOK=()=>S&&S.alive&&(S.age>=11||(typeof pmAdm==='function'&&pmAdm()));
 const phClock=()=>{const c=Math.floor(S&&S.clock||0);return String(Math.floor(c/60)).padStart(2,'0')+':'+String(c%60).padStart(2,'0')};
 // i contatti veri della tua vita
 function phContacts(){if(!S)return[];const L=[['mamma','👩','Mamma',S.mamma],['papa','👨','Papà',S.papa],['bff','🧒','Migliore amic'+(S.bffF?'a':'o'),S.bff]];
@@ -145,7 +145,7 @@ function phRender(){let e=$('ph9');if(!e){e=document.createElement('div');e.id='
   if(A&&PHX9[A]&&PHX9[A].on)try{PHX9[A].on(e)}catch(_){}
   e.querySelectorAll('[data-cv]').forEach(b=>b.onclick=()=>{PH9.app='msg';PH9.conv=b.dataset.cv;phRender();phBadge()});
   const snd=()=>{const i=$('ph9in');if(!i)return;const v=i.value.trim();if(!v)return;const who=PH9.conv,cv=phConv(who);cv.m.push({t:1,x:v});cv.q=null;phRender();setTimeout(()=>{const ip=$('ph9in');if(ip)ip.focus()},20);
-    setTimeout(()=>{const c2=phConv(who);c2.m.push({t:0,x:phReply(who,v)});if(ui.ph9&&PH9.conv===who){const ip0=$('ph9in'),keep=ip0&&ip0.value,foc=ip0&&document.activeElement===ip0;phRender();const ip=$('ph9in');if(ip){if(keep)ip.value=keep;if(foc)ip.focus()}}else{c2.u=(c2.u||0)+1;phBadge()}try{add('fel',1);updateHud()}catch(_){}save()},1300)};
+    setTimeout(()=>{const c2=phConv(who),rp=phReply(who,v);if(rp==null){save();return}c2.m.push({t:0,x:rp});if(ui.ph9&&PH9.conv===who){const ip0=$('ph9in'),keep=ip0&&ip0.value,foc=ip0&&document.activeElement===ip0;phRender();const ip=$('ph9in');if(ip){if(keep)ip.value=keep;if(foc)ip.focus()}}else{c2.u=(c2.u||0)+1;phBadge()}try{add('fel',1);updateHud()}catch(_){}save()},1300)};
   const sb=e.querySelector('[data-send]');if(sb)sb.onclick=snd;const ii=$('ph9in');if(ii)ii.onkeydown=ev=>{ev.stopPropagation();if(ev.key==='Enter'){ev.preventDefault();snd()}};
   e.querySelectorAll('[data-rep]').forEach(b=>b.onclick=()=>{const cv=phConv(PH9.conv),i=+b.dataset.rep,q=cv.q;cv.m.push({t:1,x:b.textContent});cv.q=null;phRender();
     const who=PH9.conv;setTimeout(()=>{const c2=phConv(who);c2.m.push({t:0,x:q?q.ans[i]||'😊':pick(['😊','Ciao! ❤️','Tutto bene, grazie!','Che bello sentirti! 😄'])});if(ui.ph9&&PH9.conv===who)phRender();else{c2.u=(c2.u||0)+1;phBadge()}try{add('fel',1);updateHud()}catch(_){}save()},1100)});
