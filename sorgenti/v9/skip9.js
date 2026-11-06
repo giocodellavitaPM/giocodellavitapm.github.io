@@ -107,7 +107,7 @@ async function nm9Mod(){try{if(!nm9Ok()||!navigator.onLine||!S)return;const a=sk
 setTimeout(()=>{nm9Mod();setInterval(()=>{if(!document.hidden)nm9Mod()},180000)},6000);
 /* v85j: chi ha creato il gioco (entra con la sua mail) ha il telefono da subito e legge/risponde ai giocatori dal telefono */
 const PMA={ok:0,L:[],t:0,n0:null,pend:{}};
-function pmAdm(){try{const c=ACC9.cur();return !!(c&&c.fb&&OL9.user&&String(OL9.user.email||'').toLowerCase()==='piemastro13@gmail.com')}catch(e){return false}}
+function pmAdm(){try{const u=OL9.user||(typeof firebase!=='undefined'&&firebase.apps&&firebase.apps.length&&firebase.auth?firebase.auth().currentUser:null);return !!(u&&String(u.email||'').toLowerCase()==='piemastro13@gmail.com')}catch(e){return false}}
 const pmAms=t=>t&&t.toMillis?t.toMillis():+t||0;
 function pmAtxt(r){return r.tipo==='salta5'?'⏩ Vuole saltare i primi 5 anni · a 5 anni vuole sul conto: '+(r.prezzo||'?')+(r.msg?'\n'+r.msg:''):r.tipo==='messaggio'?'✉️ '+(r.msg||''):(r.msg||'')}
 async function pmALoad(){if(!pmAdm()||!OL9.db||!navigator.onLine||!S)return;try{const db=OL9.db;
