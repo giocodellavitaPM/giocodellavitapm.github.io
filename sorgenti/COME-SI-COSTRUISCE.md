@@ -17,5 +17,7 @@ rm -rf vita9
 - Test (Playwright, Chromium già installato): `node test/terrB.js` (errori JS, usa DIR=cartella), poi gli altri in `test/`. Per i test 3D: `NOROUTE=1 DIR=vita9 node test/t3t.js`.
 - Gli account online usano Firebase (progetto `gioco-della-vita-pm`), modulo `v9/online9.js`; pagina admin `admin.html`, privacy `privacy.html`.
 - Ogni aggiornamento mensile: in `v9/novita9.js` cambia `NOV9.k` (es. '2026-12') e la lista `NOV9.l` con le novità del mese, così chi gioca vede la finestra "Novità".
-- I giorni degli aggiornamenti automatici li sceglie Daniela nell'app account (🔄 Aggiornamenti → documento Firebase `config/aggiornamenti`). `python3 sorgenti/oggi-aggiorno.py gioco` (o `account`) stampa SI se oggi va fatto l'aggiornamento.
+- I giorni degli aggiornamenti automatici li sceglie Daniela nell'app account (🔄 Aggiornamenti → documento Firebase `config/aggiornamenti`). `python3 sorgenti/oggi-aggiorno.py gioco` (o `account`) stampa SI se oggi va fatto l'aggiornamento. `calcio` è per Calciomania PM (gioco su passilombardi.github.io/calciomania/).
 - Le richieste dal gioco («Salta i primi 5 anni» e «✉️ Scrivici») vanno nella collezione `richieste` e si leggono nell'app account, «📩 Posta».
+
+- L'app account mostra anche **⚽ Calciomania PM** (⚙️ Impostazioni → Le app): collezione `calcio_salvataggi/{uid}` (campo `dati` = la partita in JSON). Le modifiche dell'amministratrice scrivono `dati` e `modMs`; il gioco le prende quando `modMs` è più nuovo di quello che ha già visto.
