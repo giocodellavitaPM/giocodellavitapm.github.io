@@ -10023,9 +10023,11 @@ function gd9Stop(){gd9LS('vita_gd9auto','0');try{GD9.conn&&GD9.conn.close()}catc
 function gd9Rel(){if(GD9.set){ui.gas=false;ui.brake=false;GD9.set=0}}
 // lo sfondo del telefono: il gioco del computer in diretta (video della scena)
 function gd9Cv(){try{if(typeof tdActive==='function'&&tdActive()&&TD.R)return TD.R.domElement}catch(e){}return typeof cv!=='undefined'?cv:document.querySelector('canvas')}
-function gd9VidOn(pid){try{gd9VidOff();const c=gd9Cv();if(!c||!c.captureStream||!GD9.peer)return;const ms=c.captureStream(20);GD9.vc=c;GD9.ms=ms;GD9.call=GD9.peer.call(pid,ms);
-  GD9.call.on('close',()=>{});GD9.vt=setInterval(()=>{try{const c2=gd9Cv();if(c2&&c2!==GD9.vc&&GD9.call&&GD9.call.peerConnection){const t=c2.captureStream(20).getVideoTracks()[0],sn=GD9.call.peerConnection.getSenders().find(x=>x.track&&x.track.kind==='video');if(sn&&t){sn.replaceTrack(t);GD9.vc=c2}}}catch(e){}},1000)}catch(e){console.warn('gd9 vid',e)}}
-function gd9VidOff(){clearInterval(GD9.vt);try{GD9.call&&GD9.call.close()}catch(e){}try{GD9.ms&&GD9.ms.getTracks().forEach(t=>t.stop())}catch(e){}GD9.call=null;GD9.ms=null}
+function gd9Hint(ms){try{ms.getVideoTracks().forEach(t=>{try{t.contentHint='detail'}catch(e){}})}catch(e){}return ms}
+function gd9Hq(){let n=0;clearInterval(GD9.hq);GD9.hq=setInterval(async()=>{try{if(++n>40){clearInterval(GD9.hq);return}const pc=GD9.call&&GD9.call.peerConnection;if(!pc)return;const sn=pc.getSenders().find(x=>x.track&&x.track.kind==='video');if(!sn)return;const p=sn.getParameters();if(!p.encodings||!p.encodings.length)return;p.encodings.forEach(e=>{e.maxBitrate=8000000;e.maxFramerate=30;e.scaleResolutionDownBy=1;e.priority='high';e.networkPriority='high'});p.degradationPreference='maintain-resolution';await sn.setParameters(p);GD9.hqOk=1;clearInterval(GD9.hq)}catch(e){}},500)}
+function gd9VidOn(pid){try{gd9VidOff();const c=gd9Cv();if(!c||!c.captureStream||!GD9.peer)return;const ms=c.captureStream(30);gd9Hint(ms);GD9.vc=c;GD9.ms=ms;GD9.call=GD9.peer.call(pid,ms);gd9Hq();
+  GD9.call.on('close',()=>{});GD9.vt=setInterval(()=>{try{const c2=gd9Cv();if(c2&&c2!==GD9.vc&&GD9.call&&GD9.call.peerConnection){const t=gd9Hint(c2.captureStream(30)).getVideoTracks()[0],sn=GD9.call.peerConnection.getSenders().find(x=>x.track&&x.track.kind==='video');if(sn&&t){sn.replaceTrack(t);GD9.vc=c2;gd9Hq()}}}catch(e){}},1000)}catch(e){console.warn('gd9 vid',e)}}
+function gd9VidOff(){clearInterval(GD9.vt);clearInterval(GD9.hq);try{GD9.call&&GD9.call.close()}catch(e){}try{GD9.ms&&GD9.ms.getTracks().forEach(t=>t.stop())}catch(e){}GD9.call=null;GD9.ms=null}
 // acceleratore e freno dal telefono
 setInterval(()=>{try{if(gd9Live()&&carNow9()){ui.pedMode=true;ui.gas=GD9.g>.25;ui.brake=GD9.b>.25&&!ui.gas;GD9.set=1}else gd9Rel()}catch(e){}},30);
 // lo sterzo: giri il telefono come un volante
