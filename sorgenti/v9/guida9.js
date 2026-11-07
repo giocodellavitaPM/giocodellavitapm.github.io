@@ -12,10 +12,10 @@ async function gd9Start(quiet){if(GD9.peer&&!GD9.peer.destroyed)return gd9Ui();G
   try{if(typeof Peer==='undefined')await gd9Lib(['lib/peerjs.min.js','https://giocodellavitapm.github.io/lib/peerjs.min.js','https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js'])}catch(e){GD9.st='err';GD9.err='Non riesco a caricare il collegamento: controlla internet.';return gd9Ui()}
   const c=gd9Code(),p=new Peer('gdvpm9-'+c,Object.assign({debug:0},window.GD9_CFG||{}));GD9.peer=p;
   p.on('open',()=>{GD9.st=GD9.conn&&GD9.conn.open?'on':'ready';GD9.tries=0;gd9Ui()});
-  p.on('connection',cn=>{const old=GD9.conn;GD9.conn=cn;if(old&&old!==cn)try{old.close()}catch(e){}
+  p.on('connection',cn=>{const old=GD9.conn;GD9.conn=cn;GD9.vi=false;gd9VidOff();if(old&&old!==cn)try{old.close()}catch(e){}
     cn.on('open',()=>{GD9.st='on';GD9.t=performance.now();gd9LS('vita_gd9auto','1');try{toast('📱🚗 Telefono collegato! Adesso è il tuo volante: destra accelera, sinistra frena, giralo per sterzare.')}catch(e){}gd9Ui()});
-    cn.on('data',d=>{if(!d||typeof d!=='object')return;const n=(x,a,b)=>Math.max(a,Math.min(b,+x||0));GD9.s=n(d.s,-1,1);GD9.g=n(d.g,0,1);GD9.b=n(d.b,0,1);GD9.t=performance.now()});
-    const bye=()=>{if(GD9.conn!==cn)return;GD9.conn=null;GD9.st=GD9.peer&&!GD9.peer.destroyed?'ready':'off';gd9Rel();try{toast('📱 Il telefono si è scollegato.')}catch(e){}gd9Ui()};cn.on('close',bye);cn.on('error',bye)});
+    cn.on('data',d=>{if(!d||typeof d!=='object')return;const n=(x,a,b)=>Math.max(a,Math.min(b,+x||0));GD9.s=n(d.s,-1,1);GD9.g=n(d.g,0,1);GD9.b=n(d.b,0,1);GD9.t=performance.now();if('vi' in d){const w=!!d.vi;if(w!==!!GD9.vi){GD9.vi=w;w?gd9VidOn(cn.peer):gd9VidOff()}}});
+    const bye=()=>{if(GD9.conn!==cn)return;GD9.conn=null;GD9.vi=false;gd9VidOff();GD9.st=GD9.peer&&!GD9.peer.destroyed?'ready':'off';gd9Rel();try{toast('📱 Il telefono si è scollegato.')}catch(e){}gd9Ui()};cn.on('close',bye);cn.on('error',bye)});
   p.on('disconnected',()=>{if(!p.destroyed)setTimeout(()=>{try{if(!p.destroyed&&p.disconnected)p.reconnect()}catch(e){}},2000)});
   p.on('error',e=>{const t=e&&e.type;if(t==='peer-unavailable')return;
     if(t==='unavailable-id'){try{p.destroy()}catch(x){}GD9.peer=null;GD9.tries++;if(GD9.tries>3)gd9Code(true);setTimeout(()=>gd9Start(true),3000);GD9.st='wait';return gd9Ui()}
@@ -23,6 +23,11 @@ async function gd9Start(quiet){if(GD9.peer&&!GD9.peer.destroyed)return gd9Ui();G
     GD9.st='err';GD9.err='Problema di rete: riprovo tra poco…';gd9Ui();try{p.destroy()}catch(x){}GD9.peer=null;setTimeout(()=>{if(!GD9.peer&&gd9LS('vita_gd9auto')!=='0')gd9Start(true)},5000)})}
 function gd9Stop(){gd9LS('vita_gd9auto','0');try{GD9.conn&&GD9.conn.close()}catch(e){}try{GD9.peer&&GD9.peer.destroy()}catch(e){}GD9.conn=null;GD9.peer=null;GD9.st='off';gd9Rel();gd9Ui()}
 function gd9Rel(){if(GD9.set){ui.gas=false;ui.brake=false;GD9.set=0}}
+// lo sfondo del telefono: il gioco del computer in diretta (video della scena)
+function gd9Cv(){try{if(typeof tdActive==='function'&&tdActive()&&TD.R)return TD.R.domElement}catch(e){}return typeof cv!=='undefined'?cv:document.querySelector('canvas')}
+function gd9VidOn(pid){try{gd9VidOff();const c=gd9Cv();if(!c||!c.captureStream||!GD9.peer)return;const ms=c.captureStream(20);GD9.vc=c;GD9.ms=ms;GD9.call=GD9.peer.call(pid,ms);
+  GD9.call.on('close',()=>{});GD9.vt=setInterval(()=>{try{const c2=gd9Cv();if(c2&&c2!==GD9.vc&&GD9.call&&GD9.call.peerConnection){const t=c2.captureStream(20).getVideoTracks()[0],sn=GD9.call.peerConnection.getSenders().find(x=>x.track&&x.track.kind==='video');if(sn&&t){sn.replaceTrack(t);GD9.vc=c2}}}catch(e){}},1000)}catch(e){console.warn('gd9 vid',e)}}
+function gd9VidOff(){clearInterval(GD9.vt);try{GD9.call&&GD9.call.close()}catch(e){}try{GD9.ms&&GD9.ms.getTracks().forEach(t=>t.stop())}catch(e){}GD9.call=null;GD9.ms=null}
 // acceleratore e freno dal telefono
 setInterval(()=>{try{if(gd9Live()&&carNow9()){ui.pedMode=true;ui.gas=GD9.g>.25;ui.brake=GD9.b>.25&&!ui.gas;GD9.set=1}else gd9Rel()}catch(e){}},30);
 // lo sterzo: giri il telefono come un volante
