@@ -414,6 +414,7 @@ function impV(){document.querySelectorAll('body>.md.impm').forEach(x=>x.remove()
        <small style="margin-top:8px">Blocca quando esci dall'app da:</small>${seg('dopo',[[0,'Subito'],[1,'1 min'],[5,'5 min'],[15,'15 min']],L.dopo==null?1:L.dopo)}`
      :`<button class="p" data-a="pin" style="width:100%;margin-top:8px">🔒 Metti il blocco (codice + impronta o viso)</button>`)}
    <div id="pinf"></div>
+   ${box('🧩 Le app','Gli account di ogni app',`<div class="row9" style="flex-direction:column"><button data-a="app0" style="text-align:left">🎮 Gioco della Vita PM <small style="display:inline;color:var(--acc)">· sei qui</small></button><button data-a="h3d" style="text-align:left">🏠 Home 3D Design PM</button></div>`)}
    ${box('📑 Quando apri l\'app, vai su','',seg('tab',TABS.map((t,i)=>[i,t[0]+' '+t[1]]),+IMP.tab||0))}
    ${box('🌗 Colori','',seg('tema',[['auto','📱 Come il telefono'],['scuro','🌙 Scuro'],['chiaro','☀️ Chiaro']],IMP.tema||'scuro'))}
    ${box('🔤 Grandezza delle scritte','',seg('testo',[[1,'Normale'],[1.12,'Grande'],[1.25,'Molto grande']],IMP.testo||1))}
@@ -424,6 +425,7 @@ function impV(){document.querySelectorAll('body>.md.impm').forEach(x=>x.remove()
   m.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{const k=b.dataset.s,v=b.dataset.v;if(k==='dopo'){const L2=LK();L2.dopo=+v;lkSave(L2)}else{IMP[k]=k==='tema'?v:+v;impSave();impApply()}impV()});
   m.querySelectorAll('[data-sw]').forEach(c=>c.onchange=async()=>{if(c.dataset.sw==='notif'&&c.checked){if(!('Notification' in window)){c.checked=false;return alert('Questo telefono non permette le notifiche per questa app. Prova a installarla sulla schermata Home.')}const r=await Notification.requestPermission();if(r!=='granted'){c.checked=false;IMP.notif=false;impSave();return impV()}IMP.notif=true;impSave();try{(await navigator.serviceWorker.ready).showNotification('🔔 Notifiche attive!',{body:'Ti avviso qui quando arriva posta nuova dal gioco.',icon:'icona-192.png',tag:'prova'})}catch(e){}return}IMP[c.dataset.sw]=c.checked;impSave();if(c.dataset.sw==='badge'&&!c.checked&&navigator.clearAppBadge)navigator.clearAppBadge()});
   m.querySelectorAll('[data-a]').forEach(b=>b.onclick=async ev=>{ev.preventDefault();const a=b.dataset.a,L2=LK();
+    if(a==='app0'){m.remove();try{tabGo(0)}catch(e){}return}if(a==='h3d'){m.remove();return h3dV()}
     if(a==='out'){if(confirm('Vuoi uscire dall\'account?')){m.remove();A.signOut()}}
     else if(a==='upd'){try{const r=await navigator.serviceWorker.getRegistration();if(r)await r.update()}catch(e){}msg9('🔄 Fatto! Se c\'è una versione nuova, la vedi alla prossima apertura.')}
     else if(a==='now'){m.remove();lockShow()}
@@ -437,7 +439,29 @@ function pinForm(m){const f=m.querySelector('#pinf');f.innerHTML=`<div class="ib
   f.querySelector('#pok').onclick=async()=>{const a=f.querySelector('#p1').value.trim(),b=f.querySelector('#p2').value.trim(),ms_=f.querySelector('#pms');if(!/^\d{4,6}$/.test(a))return ms_.textContent='Il codice deve avere da 4 a 6 numeri.';if(a!==b)return ms_.textContent='I due codici non sono uguali.';
     const old=LK()||{},salt=b64(crypto.getRandomValues(new Uint8Array(12)));lkSave({pin:await lkHash(a,salt),salt,n:a.length,bio:old.bio||null,dopo:old.dopo==null?1:old.dopo});IMP.t0=Date.now();msg9('🔒 Codice salvato!');
     if(!old.pin&&await bioOk()&&confirm('Vuoi entrare anche con l\'impronta del dito o con il viso?')){try{const L2=LK();L2.bio=await bioNew();lkSave(L2);msg9('👆 Fatto! Ora puoi entrare con impronta o viso')}catch(e){}}impV()}}
-const IMP_VER='16';impApply();
+// --- 🏠 Home 3D Design PM: account e case (collezione home3d/{uid})
+let h3d=[],h3dErr=0,unsubH=null;
+function h3dSub(){if(unsubH||!ADM())return;unsubH=D.collection('home3d').onSnapshot(sn=>{h3d=sn.docs.map(d=>({id:d.id,...d.data()}));h3dErr=0;const m=document.querySelector('.md.h3dm');if(m&&!m.querySelector('.h3dd'))h3dDraw(m)},e=>{h3dErr=1;const m=document.querySelector('.md.h3dm');if(m)h3dDraw(m)})}
+A.onAuthStateChanged(u=>{if(!u&&unsubH){unsubH();unsubH=null;h3d=[]}});
+function h3dV(){h3dSub();document.querySelectorAll('body>.md.h3dm').forEach(x=>x.remove());const m=document.createElement('div');m.className='md h3dm';document.body.appendChild(m);m.onclick=e=>{if(e.target===m)m.remove()};h3dDraw(m)}
+const h3dT=x=>x.aggMs?x.aggMs:ms(x.agg);
+function h3dDraw(m,sel){const L=[...h3d].sort((a,b)=>h3dT(b)-h3dT(a)),tot=k=>L.reduce((a,x)=>a+(+x[k]||0),0),day=864e5;
+  if(sel){const x=h3d.find(z=>z.id===sel);if(!x)return h3dDraw(m);const C=Array.isArray(x.case)?[...x.case].sort((a,b)=>(+b.upd||0)-(+a.upd||0)):[];
+    m.innerHTML=`<div class="sh h3dd"><div style="display:flex;justify-content:space-between;gap:10px"><div><h2>🏠 ${esc(x.nome||'?')}</h2><div class="sub">${esc(x.email||'')} · ${x.accesso==='Google'?'🟦 Google':'✉️ Email'}</div></div><button id="x" style="align-self:flex-start">✕</button></div>
+     <div class="gr"><div><small>🏠 Case</small><b>${+x.nCase||C.length}</b></div><div><small>🚪 Stanze</small><b>${+x.nStanze||0}</b></div><div><small>🛋️ Oggetti</small><b>${+x.nOggetti||0}</b></div><div><small>💾 Ultimo salvataggio</small><b style="font-size:15px">${ago(h3dT(x))}</b></div></div>
+     <div class="list">${C.map(c=>`<div class="it" style="cursor:default"><span class="av">🏠</span><span style="min-width:0"><b>${esc(c.nome||'Casa senza nome')}</b><small>🚪 ${+c.stanze||0} stanze · 🛋️ ${+c.oggetti||0} oggetti</small></span><span class="r"><small>${c.upd?ago(+c.upd):''}</small></span></div>`).join('')||'<div class="empty">Ancora nessuna casa.</div>'}</div>
+     <button id="bk" style="width:100%;margin-top:12px">‹ Tutti gli account</button></div>`;
+    m.querySelector('#x').onclick=()=>m.remove();m.querySelector('#bk').onclick=()=>h3dDraw(m);return}
+  m.innerHTML=`<div class="sh"><div style="display:flex;justify-content:space-between;gap:10px"><div><h2>🏠 Home 3D Design PM</h2><div class="sub">Gli account dell'app Home 3D: si aggiornano da soli</div></div><button id="x" style="align-self:flex-start">✕</button></div>
+   <div class="gr"><div><small>👥 Account</small><b>${L.length}</b></div><div><small>✨ Nuovi o attivi in 7 giorni</small><b>${L.filter(x=>Date.now()-h3dT(x)<7*day).length}</b></div><div><small>🏠 Case in tutto</small><b>${tot('nCase')}</b></div><div><small>🛋️ Oggetti in tutto</small><b>${tot('nOggetti')}</b></div></div>
+   <input id="q3" placeholder="🔍 Cerca nome o email" style="width:100%;box-sizing:border-box;margin:6px 0 10px;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:transparent;color:inherit;font:inherit">
+   <div class="list" id="l3"></div>${h3dErr?'<p class="sub">⚠️ Per vederli va aggiunta in Firebase la regola «home3d» (è nel file delle regole).</p>':''}</div>`;
+  m.querySelector('#x').onclick=()=>m.remove();
+  const fill=()=>{const q=(m.querySelector('#q3').value||'').toLowerCase(),F=L.filter(x=>!q||(String(x.nome||'')+' '+String(x.email||'')).toLowerCase().includes(q));
+    m.querySelector('#l3').innerHTML=F.map(x=>`<button class="it" data-h3="${esc(x.id)}" style="width:100%;font-weight:400"><span class="av">${esc(String(x.nome||x.email||'?')[0].toUpperCase())}</span><span style="min-width:0"><b>${esc(x.nome||'?')}</b><small>${x.accesso==='Google'?'🟦 Google':'✉️ Email'} · ${esc(x.email||'')}</small><small>🏠 ${+x.nCase||0} case · 🚪 ${+x.nStanze||0} stanze · 🛋️ ${+x.nOggetti||0} oggetti</small></span><span class="r"><small>${ago(h3dT(x))}</small></span></button>`).join('')||`<div class="empty">${q?'Nessun account così.':h3dErr?'':'Ancora nessun account in Home 3D Design PM.'}</div>`;
+    m.querySelectorAll('[data-h3]').forEach(b=>b.onclick=()=>h3dDraw(m,b.dataset.h3))};
+  m.querySelector('#q3').oninput=fill;fill()}
+const IMP_VER='17';impApply();
 {const h=document.querySelector('header');if(h){const g=document.createElement('button');g.id='gear';g.setAttribute('aria-label','Impostazioni');g.textContent='⚙️';g.onclick=impV;h.appendChild(g)}}
 lockShow();
 </script></body></html>

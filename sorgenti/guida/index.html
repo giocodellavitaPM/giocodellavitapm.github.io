@@ -31,6 +31,8 @@ body.wm #gear{display:flex}#gear button{width:52px;height:46px;padding:0;font:90
 #bgv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;background:#000}body.bgg #bgv{display:block}
 body.bgg #brk{background:rgba(91,18,32,.72)}body.bgg #gas{background:rgba(13,90,46,.72)}body.bgg:not(.wm) #brk,body.bgg:not(.wm) #gas{background:rgba(0,0,0,.18);border:3px solid rgba(255,255,255,.25)}
 body.bgg #mid{text-shadow:0 2px 6px #000}body.bgg #stt{background:rgba(0,0,0,.45);border-radius:10px;padding:3px 8px}body.bgg #whl svg circle:first-child{stroke:rgba(11,22,16,.75)}
+#ib9{position:fixed;left:8px;right:8px;top:max(8px,env(safe-area-inset-top));z-index:20;display:flex;align-items:center;gap:10px;padding:10px;border-radius:16px;background:var(--card2);border:1.5px solid var(--acc);box-shadow:0 10px 30px rgba(0,0,0,.5);animation:ib .35s ease}@keyframes ib{from{transform:translateY(-120%)}}
+#ib9 img{width:42px;height:42px;border-radius:10px}#ib9 span{flex:1;min-width:0}#ib9 b{display:block}#ib9 small{display:block;color:var(--soft);font-size:12.5px;font-weight:600}#ib9 button{padding:9px 12px}body.drv #ib9{display:none}
 #rot{position:fixed;inset:0;display:none;background:var(--bg);z-index:5;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:20px;font-weight:800;font-size:20px}#rot i{font-style:normal;font-size:64px;animation:r9 1.6s infinite}
 @keyframes r9{0%,30%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
 @media (orientation:portrait){body.drv #rot{display:flex}}
@@ -69,7 +71,10 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js',{scope:
 const $=s=>document.querySelector(s),LS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}};
 const O=Object.assign({giro:40,inv:0,vib:1,scambia:0,modo:1,sfondo:0},(()=>{try{return JSON.parse(LS('gd_opt')||'{}')}catch(e){return {}}})());
 const st={peer:null,conn:null,on:false,want:false,code:'',s:0,g:0,b:0,a0:null,ang:null,last:0,fb:0};
-const APP=(()=>{try{if(new URLSearchParams(location.search).has('app'))sessionStorage.setItem('gd_app','1');return sessionStorage.getItem('gd_app')==='1'}catch(e){return false}})();let IE=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();IE=e;$('#inst').style.display='block'});
+const APP=(()=>{try{if(new URLSearchParams(location.search).has('app'))sessionStorage.setItem('gd_app','1');return sessionStorage.getItem('gd_app')==='1'}catch(e){return false}})();let IE=null;addEventListener('beforeinstallprompt',e=>{IE=e;$('#inst').style.display='block';ibShow()});
+function ibShow(){if(APP||$('#ib9')||sessionStorage.getItem('gd_ibx'))return;const d=document.createElement('div');d.id='ib9';d.innerHTML='<img src="icona-192.png" alt=""><span><b>Installa l\'app Guida PM</b><small>Il volante sempre sul telefono</small></span><button class="p" data-i="ok">📲 Installa</button><button data-i="x" aria-label="Chiudi">✕</button>';document.body.appendChild(d);
+  d.onclick=async ev=>{const k=ev.target.closest('[data-i]');if(!k)return;if(k.dataset.i==='x'){try{sessionStorage.setItem('gd_ibx','1')}catch(x){}return d.remove()}d.remove();$('#inst').click()}}
+addEventListener('appinstalled',()=>{const d=$('#ib9');if(d)d.remove();$('#inst').style.display='none'});
 $('#inst').onclick=async()=>{if(!IE){const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);alert(ios?'Su iPhone: tocca Condividi (il quadrato con la freccia) e poi «Aggiungi alla schermata Home».':'Apri il menu del browser (⋮ in alto a destra) e tocca «Installa app» o «Aggiungi a schermata Home».\n\nSe sei dentro l\'app del gioco, apri prima questo indirizzo in Chrome: giocodellavitapm.github.io/guida');return}IE.prompt();IE=null;$('#inst').style.display='none'};
 if(!APP)$('#inst').style.display='block';
 const q=new URLSearchParams(location.search).get('c'),cod=$('#cod');cod.value=(q||LS('gd_code')||'').replace(/\D/g,'').slice(0,6);
