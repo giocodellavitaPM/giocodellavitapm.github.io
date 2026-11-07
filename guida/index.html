@@ -18,6 +18,16 @@ button{font:inherit;font-weight:800;border-radius:14px;padding:12px 16px;border:
 #wh{width:min(26vw,170px);height:min(26vw,170px);transition:transform .05s linear}#spd{font:900 40px/1 ui-monospace,monospace}#spd small{font-size:13px;color:var(--soft);display:block;text-align:center;font-family:system-ui}
 #stt{font-size:13px;font-weight:800;color:var(--soft);text-align:center;padding:0 6px}#stt.ok{color:var(--acc)}#stt.no{color:var(--gold)}
 #bar{position:absolute;top:max(8px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);display:flex;gap:6px;pointer-events:auto;z-index:3}#bar button{padding:7px 11px;font-size:14px;border-radius:12px;background:rgba(13,26,19,.85)}
+body.wm .ped{top:auto;bottom:max(14px,env(safe-area-inset-bottom));border-radius:18px;font-size:15px;gap:4px;padding:0!important;box-shadow:0 6px 0 rgba(0,0,0,.45)}
+body.wm .ped i{font-size:34px}body.wm .ped small{display:none}
+body.wm #brk{left:max(16px,env(safe-area-inset-left))!important;right:auto!important;width:min(19vw,150px);height:min(34vh,140px)}
+body.wm #gas{left:calc(max(16px,env(safe-area-inset-left)) + min(19vw,150px) + 14px)!important;right:auto!important;width:min(15vw,118px);height:min(58vh,240px)}
+body.wm .ped.on{transform:translateY(5px);box-shadow:0 1px 0 rgba(0,0,0,.45)}
+body.wm #mid{left:38%;right:38%;justify-content:flex-end;padding-bottom:max(18px,env(safe-area-inset-bottom))}body.wm #wh{width:min(16vw,90px);height:min(16vw,90px)}
+#whl{position:absolute;display:none;right:max(14px,env(safe-area-inset-right));bottom:max(10px,env(safe-area-inset-bottom));width:min(42vw,78vh);height:min(42vw,78vh);touch-action:none;cursor:grab}
+body.wm #whl{display:block}#whl svg{width:100%;height:100%;transition:transform .02s}#whl.back svg{transition:transform .25s ease-out}
+#gear{position:absolute;display:none;right:calc(max(14px,env(safe-area-inset-right)) + min(42vw,78vh) - 40px);top:max(54px,calc(env(safe-area-inset-top) + 46px));flex-direction:column;gap:6px}
+body.wm #gear{display:flex}#gear button{width:52px;height:46px;padding:0;font:900 20px ui-monospace,monospace;border-radius:12px;color:var(--soft)}#gear button.on{background:var(--acc);color:#021008;border-color:var(--acc)}
 #rot{position:fixed;inset:0;display:none;background:var(--bg);z-index:5;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:20px;font-weight:800;font-size:20px}#rot i{font-style:normal;font-size:64px;animation:r9 1.6s infinite}
 @keyframes r9{0%,30%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
 @media (orientation:portrait){body.drv #rot{display:flex}}
@@ -34,10 +44,16 @@ button{font:inherit;font-weight:800;border-radius:14px;padding:12px 16px;border:
  <div id="mid"><svg id="wh" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="42" fill="none" stroke="#3fd98a" stroke-width="8"/><circle cx="50" cy="50" r="10" fill="#3fd98a"/><path d="M8 50H40M60 50H92M50 60V92" stroke="#3fd98a" stroke-width="7" stroke-linecap="round"/><circle cx="50" cy="8" r="4" fill="#ffd166"/></svg>
   <div id="spd">0<small>velocità</small></div><div id="stt">⏳ Mi collego…</div></div>
  <button class="ped" id="gas" aria-label="Acceleratore"><i>🟢</i>ACCELERA</button>
+ <div id="whl" aria-label="Volante: giralo col dito"><svg viewBox="0 0 200 200" aria-hidden="true"><defs><radialGradient id="wg" cx="50%" cy="40%" r="60%"><stop offset="0" stop-color="#2b4a39"/><stop offset="1" stop-color="#0b1610"/></radialGradient></defs>
+  <circle cx="100" cy="100" r="88" fill="none" stroke="#0b1610" stroke-width="26"/><circle cx="100" cy="100" r="88" fill="none" stroke="#3fd98a" stroke-width="5" opacity=".85"/><circle cx="100" cy="100" r="76" fill="none" stroke="#1f3a2b" stroke-width="3"/>
+  <path d="M14 100H70M130 100H186M100 130V188" stroke="#14261c" stroke-width="22" stroke-linecap="round"/><path d="M14 100H70M130 100H186M100 130V188" stroke="#3fd98a" stroke-width="3" stroke-linecap="round" opacity=".6"/>
+  <circle cx="100" cy="100" r="34" fill="url(#wg)" stroke="#3fd98a" stroke-width="3"/><text x="100" y="108" text-anchor="middle" font-size="20" font-weight="900" fill="#3fd98a" font-family="system-ui">PM</text><rect x="94" y="6" width="12" height="14" rx="4" fill="#ffd166"/></svg></div>
+ <div id="gear"><button data-gr="D" class="on">D</button><button data-gr="R">R</button></div>
  <div id="bar"><button id="ctr">🎯 Dritto</button><button id="opb">⚙️</button><button id="ex">✕</button></div></div>
 <div id="rot"><i>📱</i>Gira il telefono in orizzontale<br><small style="color:var(--soft)">come un volante 🚗</small></div>
 <div id="opt"><div class="in"><b style="font-size:19px">⚙️ Impostazioni del volante</b>
- <small>Quanto devi girare il telefono per sterzare tutto</small><div class="seg" data-o="giro"><button data-v="25">Poco</button><button data-v="40">Normale</button><button data-v="60">Tanto</button></div>
+ <small>Come sterzi</small><div class="seg" data-o="modo"><button data-v="1">🎡 Volante sullo schermo</button><button data-v="0">📱 Muovi il telefono</button></div>
+ <small>Quanto devi girare il telefono per sterzare tutto (se muovi il telefono)</small><div class="seg" data-o="giro"><button data-v="25">Poco</button><button data-v="40">Normale</button><button data-v="60">Tanto</button></div>
  <small>Se la macchina gira dalla parte sbagliata</small><div class="seg" data-o="inv"><button data-v="0">Normale</button><button data-v="1">Al contrario</button></div>
  <small>Vibrazione quando premi i pedali</small><div class="seg" data-o="vib"><button data-v="1">Sì</button><button data-v="0">No</button></div>
  <small>Pedali</small><div class="seg" data-o="scambia"><button data-v="0">Freno a sinistra</button><button data-v="1">Freno a destra</button></div>
@@ -46,7 +62,7 @@ button{font:inherit;font-weight:800;border-radius:14px;padding:12px 16px;border:
 <script>
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js',{scope:'./'}).catch(()=>{});
 const $=s=>document.querySelector(s),LS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}};
-const O=Object.assign({giro:40,inv:0,vib:1,scambia:0},(()=>{try{return JSON.parse(LS('gd_opt')||'{}')}catch(e){return {}}})());
+const O=Object.assign({giro:40,inv:0,vib:1,scambia:0,modo:1},(()=>{try{return JSON.parse(LS('gd_opt')||'{}')}catch(e){return {}}})());
 const st={peer:null,conn:null,on:false,want:false,code:'',s:0,g:0,b:0,a0:null,ang:null,last:0,fb:0};
 let IE=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();IE=e;$('#inst').style.display='block'});
 $('#inst').onclick=async()=>{if(!IE)return;IE.prompt();IE=null;$('#inst').style.display='none'};
@@ -54,7 +70,7 @@ const q=new URLSearchParams(location.search).get('c'),cod=$('#cod');cod.value=(q
 cod.oninput=()=>{cod.value=cod.value.replace(/\D/g,'').slice(0,6)};cod.onkeydown=e=>{if(e.key==='Enter')$('#go').click()};
 const vib=n=>{try{O.vib&&navigator.vibrate&&navigator.vibrate(n)}catch(e){}};
 // ---- sterzo: il telefono girato come un volante (gravità nel piano dello schermo)
-function onMot(e){const g=e.accelerationIncludingGravity;if(!g||g.x==null)return;const a=Math.atan2(g.y,g.x)*180/Math.PI;
+function onMot(e){if(+O.modo)return;const g=e.accelerationIncludingGravity;if(!g||g.x==null)return;const a=Math.atan2(g.y,g.x)*180/Math.PI;
   st.ang=st.ang==null?a:st.ang+wr(a-st.ang)*.35;if(st.a0==null)st.a0=st.ang;let d=wr(st.ang-st.a0);if(+O.inv)d=-d;let s=d/(+O.giro||40);s=Math.max(-1,Math.min(1,s));if(Math.abs(s)<.04)s=0;st.s=s;
   $('#wh').style.transform=`rotate(${Math.max(-1,Math.min(1,s))*90}deg)`}
 const wr=a=>{while(a>180)a-=360;while(a<-180)a+=360;return a};
@@ -65,10 +81,18 @@ $('#ctr').onclick=()=>{st.a0=st.ang;vib(30)};
 function ped(el,k){const P=new Set();const up=()=>{st[k]=P.size?1:0;el.classList.toggle('on',!!P.size)};
   el.addEventListener('pointerdown',e=>{e.preventDefault();try{el.setPointerCapture(e.pointerId)}catch(x){}P.add(e.pointerId);if(P.size===1)vib(18);up();send()});
   ['pointerup','pointercancel','lostpointercapture'].forEach(t=>el.addEventListener(t,e=>{P.delete(e.pointerId);up();send()}));el.addEventListener('contextmenu',e=>e.preventDefault())}
-function pedSide(){const sw=+O.scambia;$('#brk').style.left=sw?'auto':'0';$('#brk').style.right=sw?'0':'auto';$('#gas').style.right=sw?'auto':'0';$('#gas').style.left=sw?'0':'auto'}
+function pedSide(){document.body.classList.toggle('wm',!!+O.modo);if(+O.modo){$('#brk').style.left=$('#brk').style.right=$('#gas').style.left=$('#gas').style.right='';$('#ctr').style.display='none';return}$('#ctr').style.display='';const sw=+O.scambia;$('#brk').style.left=sw?'auto':'0';$('#brk').style.right=sw?'0':'auto';$('#gas').style.right=sw?'auto':'0';$('#gas').style.left=sw?'0':'auto'}
 ped($('#gas'),'g');ped($('#brk'),'b');pedSide();
+// ---- volante sullo schermo: lo giri col dito, quando lo lasci torna dritto
+{const W=$('#whl'),sv=W.querySelector('svg');let pid=null,a0=0,r0=0,rot=0;const MAX=135;
+  const ang=e=>{const b=W.getBoundingClientRect();return Math.atan2(e.clientY-(b.top+b.height/2),e.clientX-(b.left+b.width/2))*180/Math.PI};
+  const set=r=>{rot=Math.max(-MAX,Math.min(MAX,r));sv.style.transform=`rotate(${rot}deg)`;if(+O.modo){let s=rot/MAX;if(+O.inv)s=-s;st.s=Math.abs(s)<.03?0:s;$('#wh').style.transform=`rotate(${s*90}deg)`}};
+  W.addEventListener('pointerdown',e=>{if(pid!==null)return;e.preventDefault();pid=e.pointerId;try{W.setPointerCapture(pid)}catch(x){}W.classList.remove('back');a0=ang(e);r0=rot;vib(10)});
+  W.addEventListener('pointermove',e=>{if(e.pointerId!==pid)return;let d=ang(e)-a0;while(d>180)d-=360;while(d<-180)d+=360;const n=r0+d;if(Math.abs(n-rot)>90){a0=ang(e);r0=rot;return}set(n)});
+  const up=e=>{if(e.pointerId!==pid)return;pid=null;W.classList.add('back');set(0)};['pointerup','pointercancel','lostpointercapture'].forEach(t=>W.addEventListener(t,up))}
+st.gr='D';document.querySelectorAll('#gear [data-gr]').forEach(b=>b.onclick=()=>{st.gr=b.dataset.gr;document.querySelectorAll('#gear [data-gr]').forEach(c=>c.classList.toggle('on',c===b));vib(25)});
 // ---- collegamento col gioco
-function send(){const c=st.conn;if(!c||!c.open)return;try{c.send({s:+st.s.toFixed(3),g:st.g,b:st.b})}catch(e){}}
+function send(){const c=st.conn;if(!c||!c.open)return;const rev=st.gr==='R';try{c.send({s:+st.s.toFixed(3),g:rev?0:st.g,b:rev?Math.max(st.b,st.g):st.b})}catch(e){}}
 setInterval(send,33);
 setInterval(()=>{const t=$('#stt');if(!st.want)return;if(st.conn&&st.conn.open){const ok=Date.now()-st.fb<2500;t.className=ok?'ok':'no';t.textContent=ok?(st.inC?'🟢 Collegato · '+(st.n||'in macchina'):'🟢 Collegato · sali su un veicolo nel gioco'):'⏳ Aspetto il gioco…'}else{t.className='no';t.textContent='⏳ Mi collego al gioco '+st.code.slice(0,3)+' '+st.code.slice(3)+'…'}},300);
 function connect(){if(!st.want)return;if(typeof Peer==='undefined'){$('#err').textContent='Manca internet: riprova.';return home()}
