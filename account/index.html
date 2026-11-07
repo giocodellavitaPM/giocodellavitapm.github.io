@@ -49,7 +49,7 @@ html[data-tema=chiaro]{--bg:#f2f8f4;--card:#ffffff;--card2:#e5f3ea;--ink:#0b2215
 #msg9{position:fixed;left:50%;bottom:24px;transform:translate(-50%,40px);opacity:0;transition:.25s;z-index:100;background:var(--card2);border:1px solid var(--acc);color:var(--ink);padding:10px 16px;border-radius:14px;font-weight:700;max-width:90vw;text-align:center}#msg9.on{opacity:1;transform:translate(-50%,0)}
 </style><script>try{var L=JSON.parse(localStorage.getItem('acc_lock')||'null');if(L&&L.pin)document.documentElement.classList.add('lk');var I=JSON.parse(localStorage.getItem('acc_imp')||'{}');if(I&&I.tema)document.documentElement.dataset.tema=I.tema}catch(e){}</script></head><body><div class="w">
 <header><img src="icona-192.png" alt=""><div><h1>Account del gioco</h1><small>Gioco della Vita PM</small></div><span class="sp"></span><span class="live" id="lv" hidden><i></i>dal vivo</span></header>
-<div id="app"><div class="card">⏳ Carico…</div></div></div>
+<div id="app"><div class="card">⏳ Carico…</div></div><div id="appC" hidden></div></div>
 <script src="../fb/firebase-app-compat.js"></script><script src="../fb/firebase-auth-compat.js"></script><script src="../fb/firebase-firestore-compat.js"></script>
 <script>
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js',{scope:'./'}).catch(()=>{});
@@ -414,7 +414,7 @@ function impV(){document.querySelectorAll('body>.md.impm').forEach(x=>x.remove()
        <small style="margin-top:8px">Blocca quando esci dall'app da:</small>${seg('dopo',[[0,'Subito'],[1,'1 min'],[5,'5 min'],[15,'15 min']],L.dopo==null?1:L.dopo)}`
      :`<button class="p" data-a="pin" style="width:100%;margin-top:8px">🔒 Metti il blocco (codice + impronta o viso)</button>`)}
    <div id="pinf"></div>
-   ${box('🧩 Le app','Gli account di ogni app',`<div class="row9" style="flex-direction:column"><button data-a="app0" style="text-align:left">🎮 Gioco della Vita PM <small style="display:inline;color:var(--acc)">· sei qui</small></button><button data-a="h3d" style="text-align:left">🏠 Home 3D Design PM</button></div>`)}
+   ${box('🧩 Le app','Gli account di ogni app: tocca per cambiare',`<div class="row9" style="flex-direction:column"><button data-a="app0" style="text-align:left">🎮 Gioco della Vita PM ${IMP.app!=='calcio'?'<small style="display:inline;color:var(--acc)">· sei qui</small>':''}</button><button data-a="cm" style="text-align:left">⚽ Calciomania PM ${IMP.app==='calcio'?'<small style="display:inline;color:var(--acc)">· sei qui</small>':''}</button><button data-a="h3d" style="text-align:left">🏠 Home 3D Design PM</button></div>`)}
    ${box('📑 Quando apri l\'app, vai su','',seg('tab',TABS.map((t,i)=>[i,t[0]+' '+t[1]]),+IMP.tab||0))}
    ${box('🌗 Colori','',seg('tema',[['auto','📱 Come il telefono'],['scuro','🌙 Scuro'],['chiaro','☀️ Chiaro']],IMP.tema||'scuro'))}
    ${box('🔤 Grandezza delle scritte','',seg('testo',[[1,'Normale'],[1.12,'Grande'],[1.25,'Molto grande']],IMP.testo||1))}
@@ -425,7 +425,7 @@ function impV(){document.querySelectorAll('body>.md.impm').forEach(x=>x.remove()
   m.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{const k=b.dataset.s,v=b.dataset.v;if(k==='dopo'){const L2=LK();L2.dopo=+v;lkSave(L2)}else{IMP[k]=k==='tema'?v:+v;impSave();impApply()}impV()});
   m.querySelectorAll('[data-sw]').forEach(c=>c.onchange=async()=>{if(c.dataset.sw==='notif'&&c.checked){if(!('Notification' in window)){c.checked=false;return alert('Questo telefono non permette le notifiche per questa app. Prova a installarla sulla schermata Home.')}const r=await Notification.requestPermission();if(r!=='granted'){c.checked=false;IMP.notif=false;impSave();return impV()}IMP.notif=true;impSave();try{(await navigator.serviceWorker.ready).showNotification('🔔 Notifiche attive!',{body:'Ti avviso qui quando arriva posta nuova dal gioco.',icon:'icona-192.png',tag:'prova'})}catch(e){}return}IMP[c.dataset.sw]=c.checked;impSave();if(c.dataset.sw==='badge'&&!c.checked&&navigator.clearAppBadge)navigator.clearAppBadge()});
   m.querySelectorAll('[data-a]').forEach(b=>b.onclick=async ev=>{ev.preventDefault();const a=b.dataset.a,L2=LK();
-    if(a==='app0'){m.remove();try{tabGo(0)}catch(e){}return}if(a==='h3d'){m.remove();return h3dV()}
+    if(a==='app0'){m.remove();cmApp(false);try{tabGo(0)}catch(e){}return}if(a==='cm'){m.remove();return cmApp(true)}if(a==='h3d'){m.remove();return h3dV()}
     if(a==='out'){if(confirm('Vuoi uscire dall\'account?')){m.remove();A.signOut()}}
     else if(a==='upd'){try{const r=await navigator.serviceWorker.getRegistration();if(r)await r.update()}catch(e){}msg9('🔄 Fatto! Se c\'è una versione nuova, la vedi alla prossima apertura.')}
     else if(a==='now'){m.remove();lockShow()}
@@ -461,7 +461,157 @@ function h3dDraw(m,sel){const L=[...h3d].sort((a,b)=>h3dT(b)-h3dT(a)),tot=k=>L.r
     m.querySelector('#l3').innerHTML=F.map(x=>`<button class="it" data-h3="${esc(x.id)}" style="width:100%;font-weight:400"><span class="av">${esc(String(x.nome||x.email||'?')[0].toUpperCase())}</span><span style="min-width:0"><b>${esc(x.nome||'?')}</b><small>${x.accesso==='Google'?'🟦 Google':'✉️ Email'} · ${esc(x.email||'')}</small><small>🏠 ${+x.nCase||0} case · 🚪 ${+x.nStanze||0} stanze · 🛋️ ${+x.nOggetti||0} oggetti</small></span><span class="r"><small>${ago(h3dT(x))}</small></span></button>`).join('')||`<div class="empty">${q?'Nessun account così.':h3dErr?'':'Ancora nessun account in Home 3D Design PM.'}</div>`;
     m.querySelectorAll('[data-h3]').forEach(b=>b.onclick=()=>h3dDraw(m,b.dataset.h3))};
   m.querySelector('#q3').oninput=fill;fill()}
-const IMP_VER='17';impApply();
+const IMP_VER='18';impApply();
 {const h=document.querySelector('header');if(h){const g=document.createElement('button');g.id='gear';g.setAttribute('aria-label','Impostazioni');g.textContent='⚙️';g.onclick=impV;h.appendChild(g)}}
 lockShow();
-</script></body></html>
+</script><script>
+// --- ⚽ Calciomania PM: gli account del gioco di calcio (collezione calcio_salvataggi/{uid})
+// Si sceglie da ⚙️ Impostazioni → Le app. Sezioni: Principale (vedi e modifica tutto), Storia, Posta (per ora vuota), Aggiornamenti.
+const CM_TIERS=['Terza Categoria','Seconda Categoria','Prima Categoria','Promozione','Eccellenza','Serie D','Serie C','Serie B','Serie A'];
+const CM_DIFF=['🐣 Principiante','🙂 Normale','⚽ Medio','💪 Forte','🔥 Estremo'];
+const CM_RUOLI={P:'Portiere',D:'Difensore',C:'Centrocampista',A:'Attaccante'};
+const CM_STAFF=[['all','📋 Allenatore'],['vice','🗒️ Vice allenatore'],['atl','🏃 Preparatore atletico'],['por','🧤 Preparatore dei portieri'],['med','🩺 Medico'],['fisio','💆 Fisioterapista'],['oss','🔭 Osservatore'],['ds','💼 Direttore sportivo']];
+const CM_STIP=[0,150,500,1800,6000,20000];
+const CM_STADIO=[['tribune','🏟️ Tribune',9],['campo','🌱 Campo',4],['spogl','🚿 Spogliatoi',4],['luci','💡 Illuminazione',3],['negozio','🛍️ Bar e negozio',4],['giov','🧒 Settore giovanile',4],['centro','🏋️ Centro allenamento',4],['maxi','📺 Maxischermo',2],['park','🅿️ Parcheggio',3]];
+const CM_POSTI=[100,300,800,2000,5000,10000,20000,35000,55000,80000];
+const CM_TABS=[['🏠','Principale'],['📖','Storia'],['📩','Posta'],['🔄','Aggiornamenti']];
+AGG0.calcio={tipo:'sett',gg:6,gm:[1],ogni:7,da:'2026-11-14',ora:'10:00',on:false};
+let cm=[],cmErr=0,unsubCm=null,cmTab=0,cmSel=null;
+const cmT=x=>x.aggMs?+x.aggMs:ms(x.agg);
+function cmDati(x){if(x._s!==undefined&&x._raw===x.dati)return x._s;x._raw=x.dati;try{x._s=x.dati?JSON.parse(x.dati):null}catch(e){x._s=null}return x._s}
+function cmPos(s){try{const d=s.lega.dati,L=d.squadre.map((q,i)=>Object.assign({i},q)).sort((a,b)=>b.pt-a.pt||(b.gf-b.gs)-(a.gf-a.gs)||b.gf-a.gf);return {pos:L.findIndex(q=>q.i===s.lega.mio)+1,n:d.n,g:d.giornata,tot:2*(d.n-1),online:!!s.lega.online,nome:d.nome}}catch(e){return null}}
+function cmSub(){if(unsubCm||!ADM())return;unsubCm=D.collection('calcio_salvataggi').onSnapshot(sn=>{cm=sn.docs.map(d=>({id:d.id,...d.data()}));cmErr=0;cmRedraw()},e=>{cmErr=1;cmRedraw()})}
+A.onAuthStateChanged(u=>{if(!u&&unsubCm){unsubCm();unsubCm=null;cm=[]}if(u&&IMP.app==='calcio')setTimeout(()=>cmApp(true),60)});
+// cambia app: Gioco della Vita ⇄ Calciomania
+function cmApp(on){IMP.app=on?'calcio':'vita';impSave();const a=$('#app'),c=$('#appC'),h=document.querySelector('header');
+  if(h){const t=h.querySelector('h1'),s=h.querySelector('small');if(t)t.textContent=on?'Account di Calciomania':'Account del gioco';if(s)s.textContent=on?'Calciomania PM':'Gioco della Vita PM'}
+  if(!on){a.hidden=false;c.hidden=true;return}
+  if(!A.currentUser){return}
+  a.hidden=true;c.hidden=false;cmSub();cmInit()}
+function cmInit(){const c=$('#appC');cmTab=0;cmSel=null;
+  c.innerHTML=`<nav class="tb" id="tbC" aria-label="Sezioni di Calciomania">${CM_TABS.map((t,i)=>`<button data-ct="${i}" ${i?'':'aria-current="page"'}>${t[0]} ${t[1]}</button>`).join('')}</nav><div id="vpC"></div>`;
+  c.querySelectorAll('[data-ct]').forEach(b=>b.onclick=()=>cmGo(+b.dataset.ct));cmGo(0)}
+function cmGo(i){cmTab=i;cmSel=null;const c=$('#appC');c.querySelectorAll('[data-ct]').forEach(b=>{+b.dataset.ct===i?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current')});cmRedraw(true);window.scrollTo({top:0})}
+function cmRedraw(forza){const v=$('#vpC');if(!v||$('#appC').hidden)return;
+  if(cmTab===0){if(cmSel){if(forza||!v.querySelector('.cmed'))cmDet(cmSel);return}const q=v.querySelector('#cq');if(q&&!forza)return cmList();return cmMain()}
+  if(!forza)return;[null,cmStoria,cmPosta,cmAgg][cmTab]()}
+// --- 🏠 Principale: tutti gli account
+function cmMain(){const v=$('#vpC');
+  v.innerHTML=`<div class="kp" id="ckp"></div><div class="bar"><input id="cq" placeholder="🔍 Cerca nome, email o squadra"><select id="co"><option value="ultimo">Giocato di recente</option><option value="nuovi">Nuovi iscritti</option><option value="soldi">Più soldi</option><option value="cat">Categoria più alta</option></select></div><div class="list" id="cls"></div>
+   ${cmErr?'<p class="sub" style="color:var(--bad)">⚠️ Per vederli va aggiunta in Firebase la regola «calcio_salvataggi» (è nel file delle regole di Calciomania).</p>':''}
+   <p style="color:var(--soft);font-size:13px;margin-top:18px">Qui vedi tutti gli account di Calciomania PM: la squadra, la categoria, i soldi e i giocatori. Tocca un account per vedere tutto e cambiarlo.</p>`;
+  v.querySelector('#cq').oninput=cmList;v.querySelector('#co').onchange=cmList;cmList()}
+function cmList(){const v=$('#vpC'),q=(v.querySelector('#cq').value||'').toLowerCase(),o=v.querySelector('#co').value,now=Date.now(),day=864e5;
+  const L=cm.filter(x=>!q||[x.nome,x.email,x.club].join(' ').toLowerCase().includes(q));
+  const tier=x=>{const s=cmDati(x);return s?s.tier||1:0},soldi=x=>{const s=cmDati(x);return s?s.soldi||0:0};
+  L.sort(o==='soldi'?(a,b)=>soldi(b)-soldi(a):o==='cat'?(a,b)=>tier(b)-tier(a)||soldi(b)-soldi(a):o==='nuovi'?(a,b)=>(+b.creatoMs||0)-(+a.creatoMs||0):(a,b)=>cmT(b)-cmT(a));
+  v.querySelector('#ckp').innerHTML=`<div><b>${cm.length}</b><small>👥 Account</small></div><div><b>${cm.filter(x=>now-cmT(x)<600000).length}</b><small>🟢 Giocano adesso</small></div><div><b>${cm.filter(x=>now-cmT(x)<day).length}</b><small>📅 Oggi</small></div><div><b>${cm.filter(x=>tier(x)===9).length}</b><small>🏆 In Serie A</small></div>`;
+  v.querySelector('#cls').innerHTML=L.map(x=>{const s=cmDati(x),on=now-cmT(x)<600000,p=s&&cmPos(s);const c1=s&&s.club&&s.club.c1||'#0f5a30',c2=s&&s.club&&s.club.c2||'#fff';
+    return `<button class="it" data-cm="${esc(x.id)}"><span class="av" style="background:${esc(c1)};color:${esc(c2)};border:2px solid ${esc(c2)}">⚽</span><span style="min-width:0"><b><span class="dot ${on?'on':''}"></span>${esc(x.club||(s&&s.club&&s.club.nome)||'Senza squadra')}</b><small>${esc(x.nome||'?')} · ${x.accesso==='Google'?'🟦 Google':x.accesso?'✉️ Email':''} ${esc(x.email||'')}</small><small>${s?`${esc(CM_TIERS[(s.tier||1)-1])} · stagione ${s.stagione||1}${p?` · ${p.pos}° su ${p.n}`:''}${p&&p.online?' · 🌍 online':''}`:'Nessuna partita salvata'}</small></span><span class="r"><b class="${s&&s.soldi<0?'neg':''}">${s?eur(s.soldi):'—'}</b><small>${ago(cmT(x))}</small></span></button>`}).join('')||`<div class="empty">${q?'Nessun account così.':cmErr?'':'Ancora nessun account in Calciomania PM. Arrivano quando qualcuno entra con il suo account nel gioco.'}</div>`;
+  v.querySelectorAll('[data-cm]').forEach(b=>b.onclick=()=>{cmSel=b.dataset.cm;cmDet(cmSel)})}
+// --- scheda di un account
+function cmDet(id){const v=$('#vpC'),x=cm.find(z=>z.id===id);if(!x){cmSel=null;return cmMain()}const s=cmDati(x),p=s&&cmPos(s);window.scrollTo({top:0});
+  const rosa=s&&Array.isArray(s.rosa)?[...s.rosa].sort((a,b)=>'PDCA'.indexOf(a.r)-'PDCA'.indexOf(b.r)||b.val-a.val):[];
+  const staff=s&&s.staff?CM_STAFF.filter(([k])=>s.staff[k]).map(([k,n])=>`<div><small>${n}</small><b>${esc(s.staff[k].nome)} · ${'★'.repeat(s.staff[k].liv||0)}</b></div>`).join(''):'';
+  const stad=s&&s.stadio?CM_STADIO.filter(([k])=>typeof s.stadio[k]==='number').map(([k,n,mx])=>`<div><small>${n}</small><b>Livello ${s.stadio[k]} di ${mx}${k==='tribune'?' · '+(CM_POSTI[s.stadio[k]]||0).toLocaleString('it-IT')+' posti':''}</b></div>`).join(''):'';
+  v.innerHTML=`<div class="card cmed"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><h2 style="margin:0">⚽ ${esc(s&&s.club?s.club.nome:x.club||'Senza squadra')}</h2><div class="sub" style="color:var(--soft);font-weight:600">${esc(s&&s.club&&s.club.citta||'')}</div></div><button id="cbk">‹ Indietro</button></div>
+   <div class="acc9"><small style="color:var(--soft);font-weight:800">👤 IL SUO ACCOUNT</small><div class="gr" style="margin:6px 0 0"><div><small>Nome</small><b>${esc(x.nome||'—')}</b></div><div><small>Entra con</small><b>${x.accesso==='Google'?'🟦 Account Google':x.accesso?'✉️ Email e password':'—'}</b></div><div style="grid-column:1/-1"><small>Email</small><b style="word-break:break-all">${esc(x.email||'—')}</b></div><div><small>Codice account</small><b>${esc(x.id.slice(0,8))}</b></div><div><small>Ultimo salvataggio</small><b>${ago(cmT(x))}</b></div>${x.modMs?`<div style="grid-column:1/-1"><small>✏️ Modificato da te</small><b>${ago(+x.modMs)}${+x.modVistoMs>=+x.modMs?' · ✅ arrivato nel gioco':' · ⏳ arriva appena entra a giocare'}</b></div>`:''}</div></div>
+   ${s?`<div class="gr"><div><small>🏆 Categoria</small><b>${esc(CM_TIERS[(s.tier||1)-1])}</b></div><div><small>📅 Stagione</small><b>${s.stagione||1}${p?` · giornata ${Math.min(p.g+1,p.tot)} di ${p.tot}`:''}</b></div>
+    <div><small>📊 In classifica</small><b>${p?p.pos+'° su '+p.n:'—'}</b></div><div><small>🌍 Come gioca</small><b>${p&&p.online?'Online · '+esc(p.nome||''):'Da solo contro i bot'}</b></div>
+    <div><small>💶 Soldi</small><b class="${s.soldi<0?'neg':''}">${eur(s.soldi)}</b></div><div><small>❤️ Tifosi</small><b>${(s.tifosi||0).toLocaleString('it-IT')}</b></div>
+    <div><small>😊 Morale</small><b>${s.morale!=null?Math.round(s.morale):'—'}</b></div><div><small>🎚️ Difficoltà</small><b>${CM_DIFF[s.diff==null?2:s.diff]||'—'}</b></div>
+    <div><small>👕 Giocatori</small><b>${rosa.length}</b></div><div><small>🏆 Trofei</small><b>${(s.trofei||[]).length}</b></div>
+    <div><small>🔑 Codice segreto</small><b>${s.codice?'Sbloccato':'No'}</b></div><div><small>✨ Trucchi</small><b>${s.trucchi&&Object.keys(s.trucchi).filter(k=>s.trucchi[k]).length?Object.keys(s.trucchi).filter(k=>s.trucchi[k]).map(k=>({gratis:'Tutto gratis',super:'Super squadra'}[k]||k)).join(', '):'Nessuno'}</b></div></div>
+    ${ADM()?'<button id="ced" class="p" style="width:100%;margin:6px 0">✏️ Modifica questo account</button><div id="cedf"></div>':''}
+    <h3 style="margin:16px 0 6px">👕 La rosa</h3>${rosa.length?`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13.5px;min-width:420px"><tr style="color:var(--soft);text-align:left"><th style="padding:6px 4px">#</th><th>Nome</th><th>Ruolo</th><th>Età</th><th>Bravura</th><th>Forma</th><th>⚽</th></tr>${rosa.map(g=>`<tr style="border-top:1px solid var(--line)"><td style="padding:6px 4px">${g.num||''}</td><td><b>${g.stella?'⭐ ':''}${esc(g.n)} ${esc(g.c)}</b>${g.inf>0?' 🚑':''}</td><td>${CM_RUOLI[g.r]||g.r}</td><td>${g.eta}</td><td><b>${g.val}</b></td><td>${Math.round(g.forma)}%</td><td>${g.gol||0}</td></tr>`).join('')}</table></div>`:'<p class="sub">Nessun giocatore.</p>'}
+    <h3 style="margin:16px 0 6px">📋 Lo staff</h3>${staff?`<div class="gr">${staff}</div>`:'<p class="sub">Nessuno.</p>'}
+    <h3 style="margin:16px 0 6px">🏟️ Lo stadio</h3><div class="gr">${stad}<div><small>🧹 Stato dello stadio</small><b>${Math.round(s.stadio&&s.stadio.usura||0)}%</b></div></div>
+    ${(s.storico||[]).length?`<h3 style="margin:16px 0 6px">📖 Le sue stagioni</h3>${s.storico.map(h=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-top:1px solid var(--line)"><span>Stagione ${h.stagione} · ${esc(CM_TIERS[(h.tier||1)-1])}</span><b>${h.pos}° · ${h.pt} pt</b></div>`).join('')}`:''}
+    ${(s.notizie||[]).length?`<h3 style="margin:16px 0 6px">📰 Le ultime notizie della sua squadra</h3>${s.notizie.slice(0,8).map(n=>`<div style="padding:7px 0;border-top:1px solid var(--line);font-size:13.5px">${esc(n.ico||'📰')} ${esc(n.t)}</div>`).join('')}`:''}`
+   :'<p class="sub">Questo account non ha ancora una squadra salvata.</p>'}
+   <div class="ins">I dati si aggiornano da soli mentre gioca.</div><button id="cdl" style="color:var(--bad)">🗑️ Cancella la squadra di questo account</button></div>`;
+  v.querySelector('#cbk').onclick=()=>{cmSel=null;cmMain()};
+  v.querySelector('#cdl').onclick=async()=>{if(!confirm('Cancellare la squadra di '+(x.nome||'questo account')+'? Non si può tornare indietro.'))return;try{await D.collection('calcio_salvataggi').doc(x.id).delete();msg9('🗑️ Cancellata');cmSel=null;cmMain()}catch(e){alert('Non ci sono riuscita: '+(e.message||e))}};
+  const eb=v.querySelector('#ced');if(eb)eb.onclick=()=>{eb.hidden=true;cmEdit(x,s,v.querySelector('#cedf'))}}
+// --- modifica: soldi, categoria, stagione, tifosi, giocatori, staff, stadio, codice e trucchi
+function cmEdit(x,s0,box){const s=JSON.parse(JSON.stringify(s0)),T=s.trucchi||{};
+  const opt=(n,cur,lab)=>Array.from({length:n+1},(_,i)=>`<option value="${i}" ${+cur===i?'selected':''}>${lab?lab(i):i}</option>`).join('');
+  const inp='style="width:64px;padding:6px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit"';
+  box.className='ed';box.innerHTML=`<div class="ibx" style="margin-top:0"><b>⚡ Cambi veloci</b><div class="row9"><button data-q="m1">💶 +1 mln</button><button data-q="m10">💶 +10 mln</button><button data-q="m100">💶 +100 mln</button><button data-q="forti">💪 Tutti +5</button><button data-q="cura">🩺 Tutti guariti e in forma</button><button data-q="tif">❤️ +10.000 tifosi</button></div></div>
+   <div class="row2"><div><label>Nome della squadra</label><input id="c_nome" maxlength="28" value="${esc(s.club.nome||'')}"></div><div><label>Città</label><input id="c_citta" maxlength="24" value="${esc(s.club.citta||'')}"></div></div>
+   <div class="row2"><div><label>💶 Soldi (€)</label><input id="c_soldi" type="number" inputmode="numeric" value="${Math.round(s.soldi||0)}"></div><div><label>🏆 Categoria</label><select id="c_tier">${CM_TIERS.map((t,i)=>`<option value="${i+1}" ${s.tier===i+1?'selected':''}>${t}</option>`).join('')}</select></div></div>
+   <div class="row2"><div><label>📅 Stagione</label><input id="c_stag" type="number" min="1" max="999" value="${s.stagione||1}"></div><div><label>🎚️ Difficoltà</label><select id="c_diff">${CM_DIFF.map((t,i)=>`<option value="${i}" ${(s.diff==null?2:s.diff)===i?'selected':''}>${t}</option>`).join('')}</select></div></div>
+   <div class="row2"><div><label>❤️ Tifosi</label><input id="c_tif" type="number" min="0" value="${Math.round(s.tifosi||0)}"></div><div><label>😊 Morale (15-100)</label><input id="c_mor" type="number" min="15" max="100" value="${Math.round(s.morale||70)}"></div></div>
+   <label>🔑 Codice segreto e trucchi</label><div style="display:flex;flex-wrap:wrap;gap:6px 14px;margin:4px 0 6px"><label style="display:flex;gap:6px;align-items:center;font-weight:600;margin:0"><input type="checkbox" id="c_cod" style="width:auto" ${s.codice?'checked':''}> Pannello segreto sbloccato</label><label style="display:flex;gap:6px;align-items:center;font-weight:600;margin:0"><input type="checkbox" id="c_tg" style="width:auto" ${T.gratis?'checked':''}> 🆓 Tutto gratis</label><label style="display:flex;gap:6px;align-items:center;font-weight:600;margin:0"><input type="checkbox" id="c_ts" style="width:auto" ${T.super?'checked':''}> 🦸 Super squadra</label></div>
+   <h3 style="margin:14px 0 4px">🏟️ Stadio</h3><div class="row2">${CM_STADIO.filter(([k])=>typeof s.stadio[k]==='number').map(([k,n,mx])=>`<div><label>${n}</label><select data-st="${k}">${opt(mx,s.stadio[k],i=>'Livello '+i)}</select></div>`).join('')}<div><label>🧹 Stato dello stadio (%)</label><input id="c_us" type="number" min="0" max="100" value="${Math.round(s.stadio.usura||0)}"></div></div>
+   <h3 style="margin:14px 0 4px">📋 Staff (0 = nessuno)</h3><div class="row2">${CM_STAFF.map(([k,n])=>`<div><label>${n}</label><select data-sf="${k}">${opt(5,s.staff&&s.staff[k]?s.staff[k].liv:0,i=>i?'★'.repeat(i):'Nessuno')}</select></div>`).join('')}</div>
+   <h3 style="margin:14px 0 4px">👕 Giocatori</h3><p class="sub" style="margin:0 0 6px">Bravura e potenziale da 10 a 99, età da 15 a 45, forma da 0 a 100, giornate di infortunio. Spunta 🗑️ per mandarlo via.</p>
+   <div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:13px;min-width:560px;width:100%"><tr style="color:var(--soft);text-align:left"><th style="padding:4px">Nome</th><th>Bravura</th><th>Potenz.</th><th>Età</th><th>Forma</th><th>🚑</th><th>🗑️</th></tr>
+   ${(s.rosa||[]).map(g=>`<tr style="border-top:1px solid var(--line)" data-p="${esc(g.id)}"><td style="padding:4px"><b>${esc(g.n)} ${esc(g.c)}</b><br><small style="color:var(--soft)">${CM_RUOLI[g.r]||g.r}</small></td><td><input data-f="val" type="number" min="10" max="99" value="${g.val}" ${inp}></td><td><input data-f="pot" type="number" min="10" max="99" value="${g.pot}" ${inp}></td><td><input data-f="eta" type="number" min="15" max="45" value="${g.eta}" ${inp}></td><td><input data-f="forma" type="number" min="0" max="100" value="${Math.round(g.forma)}" ${inp}></td><td><input data-f="inf" type="number" min="0" max="60" value="${g.inf||0}" ${inp}></td><td><input type="checkbox" data-rm style="width:20px;height:20px"></td></tr>`).join('')}</table></div>
+   <div style="display:flex;gap:8px;margin-top:12px"><button id="c_ok" class="p" style="flex:1">💾 Salva le modifiche</button><button id="c_no">Annulla</button></div><p id="c_msg" class="sub"></p>`;
+  const q=id=>box.querySelector(id),num=(id,d)=>{const e=q(id);const n=e?Math.round(+e.value):NaN;return isNaN(n)?d:n};
+  box.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{const k=b.dataset.q;
+    if(k[0]==='m'){const e=q('#c_soldi');e.value=Math.round((+e.value||0)+({m1:1e6,m10:1e7,m100:1e8}[k]))}
+    if(k==='tif'){const e=q('#c_tif');e.value=(+e.value||0)+10000}
+    if(k==='forti')box.querySelectorAll('[data-f="val"]').forEach(e=>{e.value=Math.min(99,(+e.value||0)+5);const p=e.closest('tr').querySelector('[data-f="pot"]');if(+p.value<+e.value)p.value=e.value});
+    if(k==='cura'){box.querySelectorAll('[data-f="forma"]').forEach(e=>e.value=100);box.querySelectorAll('[data-f="inf"]').forEach(e=>e.value=0)}
+    msg9('Fatto: ora premi 💾 Salva')});
+  q('#c_no').onclick=()=>{box.innerHTML='';const b=document.querySelector('#ced');if(b)b.hidden=false};
+  q('#c_ok').onclick=async()=>{const msg=q('#c_msg'),F=firebase.firestore.FieldValue,cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+    s.club.nome=(q('#c_nome').value||'').trim().slice(0,28)||s.club.nome;s.club.citta=(q('#c_citta').value||'').trim().slice(0,24);
+    s.soldi=cl(num('#c_soldi',s.soldi),-1e12,1e13);s.tier=cl(num('#c_tier',s.tier),1,9);s.stagione=cl(num('#c_stag',s.stagione),1,999);s.diff=cl(num('#c_diff',2),0,4);
+    s.tifosi=cl(num('#c_tif',s.tifosi),0,1e8);s.morale=cl(num('#c_mor',s.morale),15,100);
+    s.codice=q('#c_cod').checked;s.trucchi=Object.assign({},s.trucchi||{},{gratis:q('#c_tg').checked,super:q('#c_ts').checked});
+    box.querySelectorAll('[data-st]').forEach(e=>{s.stadio[e.dataset.st]=+e.value;s.stadio.cantieri=(s.stadio.cantieri||[]).filter(c=>c.k!==e.dataset.st||c.liv>+e.value)});s.stadio.usura=cl(num('#c_us',s.stadio.usura),0,100);
+    s.staff=s.staff||{};box.querySelectorAll('[data-sf]').forEach(e=>{const k=e.dataset.sf,l=+e.value,o=s.staff[k];if(!l){delete s.staff[k];return}if(o&&o.liv===l)return;
+      s.staff[k]=Object.assign({id:'adm'+Date.now().toString(36)+k,k,nome:o?o.nome:'Nuovo '+(CM_STAFF.find(z=>z[0]===k)||['',''])[1].replace(/^\S+\s/,'').toLowerCase(),eta:o?o.eta:45},o||{},{liv:l,stip:Math.round(CM_STIP[l]),ingaggio:Math.round(CM_STIP[l]*12)})});
+    const via=new Set();box.querySelectorAll('tr[data-p]').forEach(tr=>{const g=s.rosa.find(z=>z.id===tr.dataset.p);if(!g)return;if(tr.querySelector('[data-rm]').checked){via.add(g.id);return}
+      const f=k=>{const n=Math.round(+tr.querySelector(`[data-f="${k}"]`).value);return isNaN(n)?g[k]:n};g.val=cl(f('val'),10,99);g.pot=Math.max(g.val,cl(f('pot'),10,99));g.eta=cl(f('eta'),15,45);g.forma=cl(f('forma'),0,100);g.inf=cl(f('inf'),0,60)});
+    s.rosa=s.rosa.filter(g=>!via.has(g.id));if(s.tattica&&Array.isArray(s.tattica.tit))s.tattica.tit=s.tattica.tit.map(id=>via.has(id)?null:id);
+    const now=Date.now();s.agg=now;s.modAdmin=now;
+    const up={dati:JSON.stringify(s),club:s.club.nome,categoria:CM_TIERS[s.tier-1],stagione:s.stagione,soldi:Math.round(s.soldi),modMs:now,modAdmin:F.serverTimestamp(),aggMs:now};
+    msg.textContent='⏳ Salvo…';try{await D.collection('calcio_salvataggi').doc(x.id).update(up);msg.innerHTML='<span class="ok">✅ Fatto! Se sta giocando, la sua squadra cambia subito. Se non sta giocando, cambia appena entra.</span>';setTimeout(()=>cmDet(x.id),1600)}
+    catch(e){msg.innerHTML='<span style="color:var(--bad)">'+(e&&e.code==='permission-denied'?'Firebase non ti lascia ancora modificare: prima va aggiunta la regola «calcio_salvataggi» in Firebase.':'Non sono riuscita a salvare: '+esc(e&&e.message||e))+'</span>'}}}
+// --- 📖 Storia di Calciomania
+const CM_STORIA=[['7 nov (notte)','In arrivo la versione professionale: grafica scura, budget di 2,5 milioni, infortuni e imprevisti, account o ospite. Calciomania entra nell\'app degli account'],
+ ['7 nov (sera)','Pubblicato sul sito passilombardi.github.io/calciomania/; «Ricomincia da capo» sistemato'],
+ ['7 nov (pomeriggio)','Nuovo nome: Calciomania PM. Rotella delle impostazioni con «Aggiungi codice» e pannello segreto per cambiare soldi, giocatori, stadio e campionato'],
+ ['7 nov (pomeriggio)','Stadio da progettare (nome, colori, tetto, forma, bandiere, fumogeni) con la vista panoramica; grafica più bella'],
+ ['7 nov (pomeriggio)','5 livelli di difficoltà; partite con i giocatori che corrono, con numero e faccia; tre viste: telecamera, dall\'alto e solo numeri'],
+ ['7 nov (mattina)','Calciatori veri nel mercato (⭐ Campioni): Woltemade, Maldini, Vicario e tanti altri'],
+ ['7 nov (mattina)','Primo gioco (si chiamava Presidente PM): fondi la società in Terza Categoria, compri giocatori, staff e stadio e sali fino alla Serie A; gironi online dove le persone vere prendono il posto dei bot']];
+function cmStoria(){const v=$('#vpC');
+  v.innerHTML=`<div class="card"><h2 style="margin:0">📖 La storia di Calciomania PM</h2><div class="sub" style="color:var(--soft);font-weight:600">Dal 7 novembre 2026 a oggi</div>
+   <p>Il gioco è nato il <b>7 novembre 2026</b> con il nome <b>Presidente PM</b>. Lo stesso giorno è diventato <b>Calciomania PM</b>: un gioco manageriale di calcio dove fondi la tua società e la porti dalla Terza Categoria alla Serie A.</p>
+   <div class="gr"><div><small>🏆 Campionati</small><b>9, dalla Terza Categoria alla Serie A</b></div><div><small>⭐ Calciatori veri</small><b>83</b></div><div><small>🎚️ Difficoltà</small><b>5</b></div><div><small>📝 Righe di codice</small><b>2.471</b></div><div><small>📏 Grandezza</small><b>220 KB</b></div><div><small>🌍 Dove si gioca</small><b>Sito, app da installare, gironi online</b></div></div>
+   <h3 style="margin:16px 0 6px">🗓️ Le tappe</h3><div class="sub" style="margin:0 0 4px">La più recente in cima</div>${CM_STORIA.map(([d,t])=>`<div style="display:grid;grid-template-columns:110px 1fr;gap:10px;padding:8px 0;border-top:1px solid var(--line)"><b style="font-size:12.5px;color:var(--acc)">${d}</b><span style="font-size:13.5px">${esc(t)}</span></div>`).join('')}
+   <h3 style="margin:16px 0 6px">✨ Com'è adesso</h3><p style="font-size:13.5px;margin:4px 0">Sei il presidente: compri giocatori (anche campioni veri), staff e allenatore, sistemi e progetti lo stadio, guardi le partite in diretta e sali di categoria. Online le persone vere prendono il posto dei bot, e in Serie A la classifica si allunga.</p>
+   <p style="font-size:13.5px"><a href="https://passilombardi.github.io/calciomania/" target="_blank" rel="noopener" style="color:var(--acc)">🌐 Apri il sito</a> · <a href="https://passilombardi.github.io/calciomania/app/" target="_blank" rel="noopener" style="color:var(--acc)">⚽ Apri il gioco</a></p></div>`}
+// --- 📩 Posta: per ora vuota (la faremo più avanti)
+function cmPosta(){$('#vpC').innerHTML=`<div class="card"><h2 style="margin:0">📩 Posta</h2><div class="empty">Qui arriveranno i messaggi da Calciomania PM.<br>Per ora è vuota: la faremo più avanti.</div></div>`}
+// --- 🔄 Aggiornamenti di Calciomania
+function cmAgg(){const v=$('#vpC'),c=aggC('calcio'),inp='padding:9px;border-radius:10px;border:1px solid var(--line);background:transparent;color:inherit;font:inherit;color-scheme:dark',lab='display:flex;justify-content:space-between;align-items:center;gap:10px;margin:8px 0';
+  const ev=aggCal('calcio');
+  v.innerHTML=`<div class="card"><h2 style="margin:0">🔄 Aggiornamenti di Calciomania</h2><div class="sub" style="color:var(--soft);font-weight:600">I prossimi 3 mesi · ora italiana. Adesso: ${esc(aggRegola(c))}</div>
+   <div style="overflow-x:auto;margin:10px 0"><table style="width:100%;border-collapse:collapse;font-size:15px"><thead><tr style="text-align:left;color:var(--soft)"><th style="padding:8px 6px;border-bottom:1px solid var(--line)">Data</th><th style="padding:8px 6px;border-bottom:1px solid var(--line)">Cosa si aggiorna</th><th style="padding:8px 6px;border-bottom:1px solid var(--line)">Ora</th></tr></thead><tbody>
+   ${ev.map((d,i)=>`<tr style="${i===0?'background:var(--acc2)':''}"><td style="padding:9px 6px;border-bottom:1px solid var(--line)">${aggD(d).replace(/^./,z=>z.toUpperCase())}</td><td style="padding:9px 6px;border-bottom:1px solid var(--line);font-weight:800;color:var(--acc)">⚽ Calciomania</td><td style="padding:9px 6px;border-bottom:1px solid var(--line)">${esc(c.ora)}</td></tr>`).join('')||'<tr><td colspan="3" style="padding:12px 6px">Ancora nessun giorno scelto: gli aggiornamenti sono in pausa. Scegli i giorni qui sotto.</td></tr>'}</tbody></table></div>
+   <h3 style="margin:14px 0 4px">✏️ Scegli i giorni</h3><details ${c.on?'':'open'} style="margin:8px 0;padding:12px 14px;border:1px solid var(--line);border-radius:16px"><summary style="cursor:pointer;font-weight:800">⚽ Calciomania · <span style="font-weight:400;color:var(--soft)">${esc(aggRegola(c))}</span> · ✏️ cambia</summary>
+   <label style="${lab}">Quando<select id="t_calcio" style="${inp}"><option value="sett" ${c.tipo==='sett'?'selected':''}>Ogni settimana</option><option value="mese" ${c.tipo==='mese'?'selected':''}>Giorni del mese</option><option value="ogni" ${c.tipo==='ogni'?'selected':''}>Ogni tot giorni</option></select></label>
+   <label style="${lab}" data-v="sett">Giorno della settimana<select id="g_calcio" style="${inp}">${GSET.map((g,i)=>`<option value="${i}" ${+c.gg===i?'selected':''}>${g}</option>`).join('')}</select></label>
+   <label style="${lab}" data-v="mese">Giorni del mese (es. 3, 23)<input id="m_calcio" value="${(c.gm||[]).join(', ')}" style="${inp};width:110px"></label>
+   <label style="${lab}" data-v="ogni">Ogni quanti giorni<input type="number" min="1" max="90" id="o_calcio" value="${+c.ogni||7}" style="${inp};width:80px"></label>
+   <label style="${lab}" data-v="ogni">A partire dal<input type="date" id="d_calcio" value="${c.da}" style="${inp}"></label>
+   <label style="${lab}">Ora<input type="time" id="h_calcio" value="${(c.ora||'10:00').padStart(5,'0')}" style="${inp}"></label>
+   <label style="${lab}">Attivo<input type="checkbox" id="a_calcio" ${c.on?'checked':''} style="width:22px;height:22px;accent-color:var(--acc)"></label>
+   <button id="sv_calcio" style="width:100%;padding:11px;border-radius:12px;font-weight:800;cursor:pointer;background:var(--acc);color:#021008;border:0">💾 Salva</button><p class="sub" id="s_calcio" style="margin:6px 0 0"></p></details>
+   ${aggErr?'<p class="sub">⚠️ Per salvare va aggiunta la regola «config» in Firebase.</p>':''}
+   <h3 style="margin:14px 0 6px">📜 Ultimi cambiamenti pubblicati</h3><div class="list" id="ghC"><div class="empty">⏳ Carico…</div></div></div>`;
+  const sel=v.querySelector('#t_calcio'),sh=()=>v.querySelectorAll('details [data-v]').forEach(l=>l.style.display=l.dataset.v===sel.value?'flex':'none');sel.onchange=sh;sh();
+  v.querySelector('#sv_calcio').onclick=async()=>{const val=id=>v.querySelector('#'+id+'_calcio').value,st=v.querySelector('#s_calcio'),b=v.querySelector('#sv_calcio');
+    const gm=[...new Set(val('m').split(/[^0-9]+/).map(Number).filter(z=>z>=1&&z<=31))].sort((a,b)=>a-b),nc={tipo:val('t'),gg:+val('g'),gm:gm.length?gm:[1],ogni:Math.max(1,Math.min(90,Math.round(+val('o')||7))),da:val('d')||oggi(),ora:(val('h')||'10:00').replace(/^0(\d)/,'$1'),on:v.querySelector('#a_calcio').checked};
+    b.disabled=true;st.textContent='⏳ Salvo…';try{await D.collection('config').doc('aggiornamenti').set({calcio:nc,agg:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});agg=Object.assign({},agg,{calcio:nc});cmAgg();const s2=$('#s_calcio');if(s2)s2.innerHTML='<span class="ok">✅ Salvato! Prossimo: '+aggD(aggProx('calcio'))+'.</span>';const d2=$('#vpC details');if(d2)d2.open=true}
+    catch(e){b.disabled=false;st.textContent='⚠️ Non sono riuscita a salvare: '+e.message}};
+  fetch('https://api.github.com/repos/passilombardi/passilombardi.github.io/commits?path=calciomania&per_page=12').then(r=>r.json()).then(L=>{const e=$('#ghC');if(!e)return;if(!Array.isArray(L))throw 0;
+    e.innerHTML=L.map(c=>{const t=(c.commit.message||'').split('\n')[0],w=c.commit.author&&c.commit.author.date;return `<div class="it" style="cursor:default"><span class="av">⚽</span><span style="min-width:0"><b style="font-weight:600">${esc(t)}</b><small>${w?new Date(w).toLocaleString('it-IT',{day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}):''}</small></span></div>`}).join('')||'<div class="empty">Ancora niente.</div>'}).catch(()=>{const e=$('#ghC');if(e)e.innerHTML='<div class="empty">Non riesco a caricare la lista adesso.</div>'})}
+</script>
+</body></html>

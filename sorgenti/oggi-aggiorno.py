@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Dice se oggi va fatto l'aggiornamento. Uso: python3 oggi-aggiorno.py gioco|account
+"""Dice se oggi va fatto l'aggiornamento. Uso: python3 oggi-aggiorno.py gioco|account|calcio
 Legge config/aggiornamenti da Firebase (lo cambia Daniela nell'app account, sezione 🔄 Aggiornamenti).
 Tipi: 'sett' (gg = giorno della settimana, 0=domenica), 'mese' (gm = giorni del mese, es. [3,23]), 'ogni' (ogni N giorni dal giorno 'da').
 Stampa SI o NO e il motivo. Se Firebase non risponde usa i valori di partenza."""
@@ -9,7 +9,7 @@ try:
 except Exception:oggi=datetime.date.today()
 if len(sys.argv)>2:oggi=datetime.date.fromisoformat(sys.argv[2])
 k=sys.argv[1] if len(sys.argv)>1 else 'gioco'
-c={'gioco':{'tipo':'sett','gg':0,'gm':[1],'ogni':7,'da':'2026-11-08','ora':'10:00','on':True},'account':{'tipo':'mese','gm':[3,23],'gg':0,'ogni':20,'da':'2026-11-23','ora':'9:43','on':True}}[k]
+c={'gioco':{'tipo':'sett','gg':0,'gm':[1],'ogni':7,'da':'2026-11-08','ora':'10:00','on':True},'account':{'tipo':'mese','gm':[3,23],'gg':0,'ogni':20,'da':'2026-11-23','ora':'9:43','on':True},'calcio':{'tipo':'sett','gg':6,'gm':[1],'ogni':7,'da':'2026-11-14','ora':'10:00','on':False}}[k]
 KEY='AIzaSyBJRUlGK_ArYn2K_pJ0ePChTUC3gkikwgY'
 def val(v):
   if 'integerValue' in v:return int(v['integerValue'])
