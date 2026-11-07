@@ -2,7 +2,7 @@
    Impostazioni → 🎮 Impostazioni guida → 📱 Collega al telefono. Collegamento diretto (WebRTC, PeerJS) col codice di 6 numeri.
    Il telefono manda {s:sterzo -1..1, g:acceleratore 0..1, b:freno 0..1}; il gioco risponde {v:velocità, c:in auto?, n:nome veicolo}. */
 const GD9={peer:null,conn:null,st:'off',s:0,g:0,b:0,t:0,set:0,tries:0,err:''};
-const GD9_URL='https://giocodellavitapm.github.io/guida/';
+const GD9_URL='https://guidapm.github.io/';
 const gd9LS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){return null}};
 function gd9Lib(L){return new Promise((ok,ko)=>{const go=i=>{if(i>=L.length)return ko(new Error('lib'));const s=document.createElement('script');s.src=L[i];s.onload=ok;s.onerror=()=>{s.remove();go(i+1)};document.head.appendChild(s)};go(0)})}
 function gd9Code(nuovo){let c=gd9LS('vita_gd9code');if(nuovo||!/^\d{6}$/.test(c||'')){c=String(100000+Math.floor(Math.random()*900000));gd9LS('vita_gd9code',c)}return c}
@@ -47,7 +47,7 @@ function gd9Ui(){const e=$('gd9');if(!e)return;const c=gd9Code(),link=GD9_URL+'?
    <div class="g9b"><b>💻 Sul computer</b><small>Muovi il mouse per sterzare: tasto DESTRO accelera, SINISTRO frena. Vanno bene anche le freccette.</small></div>
    <div class="g9b"><b>📱 Collega al telefono</b><small>Il tuo telefono diventa un volante! Lo tieni in orizzontale: a destra l'acceleratore, a sinistra il freno, e lo giri per sterzare. Funziona con macchine, moto, camion e tutti i veicoli a motore.</small>
     ${st==='off'?'<button class="go" data-g9="on">📱 Collega al telefono</button>':`
-    <ol><li>Sul telefono apri <b>giocodellavitapm.github.io/guida</b> oppure inquadra il quadrato qui sotto.</li><li>Installa l'app <b>«Guida Gioco della Vita PM»</b> (la prima volta).</li><li>Scrivi questo codice e premi Collega:</li></ol>
+    <ol><li>Sul telefono apri <b>guidapm.github.io</b> oppure inquadra il quadrato qui sotto.</li><li>Installa l'app <b>«Guida Gioco della Vita PM»</b> (la prima volta).</li><li>Scrivi questo codice e premi Collega:</li></ol>
     <div class="g9c">${c.slice(0,3)} ${c.slice(3)}</div><div class="g9q" id="gd9q"></div>${stato}
     <div class="g9r"><button data-g9="new">🔄 Nuovo codice</button><button data-g9="off">🔌 Scollega</button></div>`}</div>
    <div class="g9b"><b>🎯 Sterzo del telefono</b><small>Quanto gira la macchina quando giri il telefono</small><div class="g9r">${[[1,'Piano'],[2,'Normale'],[3,'Forte']].map(([k,t])=>`<button data-g9s="${k}" ${k===sens?'class="on"':''}>${t}</button>`).join('')}</div></div>
