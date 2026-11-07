@@ -1,0 +1,98 @@
+<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Guida Gioco della Vita PM</title><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#07110c"><link rel="icon" href="icona-192.png"><link rel="apple-touch-icon" href="icona-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Guida PM"><meta name="robots" content="noindex">
+<style>
+:root{--bg:#07110c;--card:#0d1a13;--card2:#11241a;--ink:#eafff2;--soft:#8fb7a0;--line:#1f3a2b;--acc:#3fd98a;--bad:#ff5d6c;--gold:#ffd166}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overscroll-behavior:none}
+button{font:inherit;font-weight:800;border-radius:14px;padding:12px 16px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}button.p{background:var(--acc);border-color:var(--acc);color:#021008}
+#home{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:max(20px,env(safe-area-inset-top)) 16px 24px;text-align:center}
+#home img{width:96px;height:96px;border-radius:24px}#home h1{margin:0;font-size:24px}#home .sub{color:var(--soft);font-weight:600;margin:0;max-width:420px}
+#cod{width:min(320px,100%);font:900 36px/1 ui-monospace,monospace;letter-spacing:8px;text-align:center;padding:14px;border-radius:16px;border:2px solid var(--acc);background:#020604;color:var(--ink)}
+#home .p{width:min(320px,100%);font-size:19px;padding:15px}.how{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;text-align:left;max-width:420px;font-size:14.5px;color:var(--soft);font-weight:600}.how b{color:var(--ink)}
+#err{color:var(--bad);font-weight:800;min-height:22px;margin:0}#inst{display:none}
+#drive{position:fixed;inset:0;display:none;touch-action:none;user-select:none;-webkit-user-select:none}
+.ped{position:absolute;top:0;bottom:0;width:38%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-weight:900;font-size:22px;letter-spacing:1px;border:0;border-radius:0;transition:filter .08s,transform .08s}
+#brk{left:0;background:linear-gradient(90deg,#3a0c12,#5b1220);color:#ffd2d7;padding-left:env(safe-area-inset-left)}#gas{right:0;background:linear-gradient(270deg,#073a1d,#0d5a2e);color:#d6ffe6;padding-right:env(safe-area-inset-right)}
+.ped i{font-style:normal;font-size:54px;line-height:1}.ped.on{filter:brightness(1.6)}.ped.on i{transform:scale(.9)}
+#mid{position:absolute;left:38%;right:38%;top:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;pointer-events:none}
+#wh{width:min(26vw,170px);height:min(26vw,170px);transition:transform .05s linear}#spd{font:900 40px/1 ui-monospace,monospace}#spd small{font-size:13px;color:var(--soft);display:block;text-align:center;font-family:system-ui}
+#stt{font-size:13px;font-weight:800;color:var(--soft);text-align:center;padding:0 6px}#stt.ok{color:var(--acc)}#stt.no{color:var(--gold)}
+#bar{position:absolute;top:max(8px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);display:flex;gap:6px;pointer-events:auto;z-index:3}#bar button{padding:7px 11px;font-size:14px;border-radius:12px;background:rgba(13,26,19,.85)}
+#rot{position:fixed;inset:0;display:none;background:var(--bg);z-index:5;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:20px;font-weight:800;font-size:20px}#rot i{font-style:normal;font-size:64px;animation:r9 1.6s infinite}
+@keyframes r9{0%,30%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
+@media (orientation:portrait){body.drv #rot{display:flex}}
+#opt{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;place-items:center;z-index:6;padding:16px}#opt .in{background:var(--card);border:1.5px solid var(--acc);border-radius:20px;padding:16px;width:min(420px,100%);display:flex;flex-direction:column;gap:10px;max-height:92vh;overflow:auto}
+#opt .seg{display:flex;gap:6px}#opt .seg button{flex:1;padding:9px}#opt .seg button.on{background:var(--acc);color:#021008;border-color:var(--acc)}#opt small{color:var(--soft);font-weight:600}
+</style></head><body>
+<div id="home"><img src="icona-192.png" alt=""><h1>Guida · Gioco della Vita PM</h1>
+ <p class="sub">Il tuo telefono diventa il volante del Gioco della Vita PM che hai aperto sul computer.</p>
+ <input id="cod" inputmode="numeric" pattern="[0-9]*" maxlength="7" placeholder="000000" autocomplete="off" aria-label="Codice del gioco">
+ <button class="p" id="go">🔗 Collega</button><p id="err"></p>
+ <div class="how"><b>Come si fa</b><br>1. Sul computer, nel gioco: ⚙️ Impostazioni → 🎮 Impostazioni guida → 📱 Collega al telefono.<br>2. Scrivi qui il codice che vedi sul computer.<br>3. Tieni il telefono <b>in orizzontale</b>, come un volante: a <b>destra</b> l'acceleratore, a <b>sinistra</b> il freno. Giralo per sterzare!</div>
+ <button id="inst">📲 Installa l'app sul telefono</button></div>
+<div id="drive"><button class="ped" id="brk" aria-label="Freno"><i>🛑</i>FRENO<small style="font-size:12px;opacity:.8">tieni premuto: retromarcia</small></button>
+ <div id="mid"><svg id="wh" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="42" fill="none" stroke="#3fd98a" stroke-width="8"/><circle cx="50" cy="50" r="10" fill="#3fd98a"/><path d="M8 50H40M60 50H92M50 60V92" stroke="#3fd98a" stroke-width="7" stroke-linecap="round"/><circle cx="50" cy="8" r="4" fill="#ffd166"/></svg>
+  <div id="spd">0<small>velocità</small></div><div id="stt">⏳ Mi collego…</div></div>
+ <button class="ped" id="gas" aria-label="Acceleratore"><i>🟢</i>ACCELERA</button>
+ <div id="bar"><button id="ctr">🎯 Dritto</button><button id="opb">⚙️</button><button id="ex">✕</button></div></div>
+<div id="rot"><i>📱</i>Gira il telefono in orizzontale<br><small style="color:var(--soft)">come un volante 🚗</small></div>
+<div id="opt"><div class="in"><b style="font-size:19px">⚙️ Impostazioni del volante</b>
+ <small>Quanto devi girare il telefono per sterzare tutto</small><div class="seg" data-o="giro"><button data-v="25">Poco</button><button data-v="40">Normale</button><button data-v="60">Tanto</button></div>
+ <small>Se la macchina gira dalla parte sbagliata</small><div class="seg" data-o="inv"><button data-v="0">Normale</button><button data-v="1">Al contrario</button></div>
+ <small>Vibrazione quando premi i pedali</small><div class="seg" data-o="vib"><button data-v="1">Sì</button><button data-v="0">No</button></div>
+ <small>Pedali</small><div class="seg" data-o="scambia"><button data-v="0">Freno a sinistra</button><button data-v="1">Freno a destra</button></div>
+ <button class="p" id="opx">Fatto</button></div></div>
+<script src="../lib/peerjs.min.js"></script>
+<script>
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js',{scope:'./'}).catch(()=>{});
+const $=s=>document.querySelector(s),LS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}};
+const O=Object.assign({giro:40,inv:0,vib:1,scambia:0},(()=>{try{return JSON.parse(LS('gd_opt')||'{}')}catch(e){return {}}})());
+const st={peer:null,conn:null,on:false,want:false,code:'',s:0,g:0,b:0,a0:null,ang:null,last:0,fb:0};
+let IE=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();IE=e;$('#inst').style.display='block'});
+$('#inst').onclick=async()=>{if(!IE)return;IE.prompt();IE=null;$('#inst').style.display='none'};
+const q=new URLSearchParams(location.search).get('c'),cod=$('#cod');cod.value=(q||LS('gd_code')||'').replace(/\D/g,'').slice(0,6);
+cod.oninput=()=>{cod.value=cod.value.replace(/\D/g,'').slice(0,6)};cod.onkeydown=e=>{if(e.key==='Enter')$('#go').click()};
+const vib=n=>{try{O.vib&&navigator.vibrate&&navigator.vibrate(n)}catch(e){}};
+// ---- sterzo: il telefono girato come un volante (gravità nel piano dello schermo)
+function onMot(e){const g=e.accelerationIncludingGravity;if(!g||g.x==null)return;const a=Math.atan2(g.y,g.x)*180/Math.PI;
+  st.ang=st.ang==null?a:st.ang+wr(a-st.ang)*.35;if(st.a0==null)st.a0=st.ang;let d=wr(st.ang-st.a0);if(+O.inv)d=-d;let s=d/(+O.giro||40);s=Math.max(-1,Math.min(1,s));if(Math.abs(s)<.04)s=0;st.s=s;
+  $('#wh').style.transform=`rotate(${Math.max(-1,Math.min(1,s))*90}deg)`}
+const wr=a=>{while(a>180)a-=360;while(a<-180)a+=360;return a};
+async function motion(){try{if(typeof DeviceMotionEvent!=='undefined'&&typeof DeviceMotionEvent.requestPermission==='function'){const r=await DeviceMotionEvent.requestPermission();if(r!=='granted')throw 0}}catch(e){$('#stt').textContent='⚠️ Per sterzare serve il permesso dei sensori';}
+  removeEventListener('devicemotion',onMot);addEventListener('devicemotion',onMot)}
+$('#ctr').onclick=()=>{st.a0=st.ang;vib(30)};
+// ---- pedali (multi-touch: puoi premere freno e acceleratore insieme)
+function ped(el,k){const P=new Set();const up=()=>{st[k]=P.size?1:0;el.classList.toggle('on',!!P.size)};
+  el.addEventListener('pointerdown',e=>{e.preventDefault();try{el.setPointerCapture(e.pointerId)}catch(x){}P.add(e.pointerId);if(P.size===1)vib(18);up();send()});
+  ['pointerup','pointercancel','lostpointercapture'].forEach(t=>el.addEventListener(t,e=>{P.delete(e.pointerId);up();send()}));el.addEventListener('contextmenu',e=>e.preventDefault())}
+function pedSide(){const sw=+O.scambia;$('#brk').style.left=sw?'auto':'0';$('#brk').style.right=sw?'0':'auto';$('#gas').style.right=sw?'auto':'0';$('#gas').style.left=sw?'0':'auto'}
+ped($('#gas'),'g');ped($('#brk'),'b');pedSide();
+// ---- collegamento col gioco
+function send(){const c=st.conn;if(!c||!c.open)return;try{c.send({s:+st.s.toFixed(3),g:st.g,b:st.b})}catch(e){}}
+setInterval(send,33);
+setInterval(()=>{const t=$('#stt');if(!st.want)return;if(st.conn&&st.conn.open){const ok=Date.now()-st.fb<2500;t.className=ok?'ok':'no';t.textContent=ok?(st.inC?'🟢 Collegato · '+(st.n||'in macchina'):'🟢 Collegato · sali su un veicolo nel gioco'):'⏳ Aspetto il gioco…'}else{t.className='no';t.textContent='⏳ Mi collego al gioco '+st.code.slice(0,3)+' '+st.code.slice(3)+'…'}},300);
+function connect(){if(!st.want)return;if(typeof Peer==='undefined'){$('#err').textContent='Manca internet: riprova.';return home()}
+  const go=()=>{if(!st.want)return;try{st.conn&&st.conn.close()}catch(e){}const c=st.peer.connect('gdvpm9-'+st.code,{reliable:false,serialization:'json'});st.conn=c;
+    let opened=false;const to=setTimeout(()=>{if(!opened&&st.conn===c){try{c.close()}catch(e){}retry()}},9000);
+    c.on('open',()=>{opened=true;clearTimeout(to);vib([40,40,40]);LS('gd_code',st.code)});
+    c.on('data',d=>{if(d&&typeof d==='object'){st.fb=Date.now();$('#spd').firstChild.nodeValue=String(d.v||0);st.inC=!!d.c;st.n=d.n||''}});
+    c.on('close',()=>{if(st.conn===c)retry()});c.on('error',()=>{if(st.conn===c)retry()})};
+  if(st.peer&&!st.peer.destroyed&&st.peer.open)return go();
+  try{st.peer&&st.peer.destroy()}catch(e){}st.peer=new Peer(Object.assign({debug:0},window.GD9_CFG||{}));
+  st.peer.on('open',go);st.peer.on('error',e=>{if(e&&e.type==='peer-unavailable'){$('#stt').textContent='⏳ Il gioco con il codice '+st.code+' non è pronto: controlla il computer';return retry()}retry(true)});
+  st.peer.on('disconnected',()=>{try{st.peer.reconnect()}catch(e){}})}
+let rT=0;function retry(full){clearTimeout(rT);if(!st.want)return;rT=setTimeout(()=>{if(full){try{st.peer&&st.peer.destroy()}catch(e){}st.peer=null}connect()},2500)}
+async function start(){const c=cod.value.replace(/\D/g,'');if(c.length!==6){$('#err').textContent='Il codice ha 6 numeri.';return}$('#err').textContent='';st.code=c;st.want=true;
+  document.body.classList.add('drv');$('#home').style.display='none';$('#drive').style.display='block';st.a0=null;await motion();
+  try{await document.documentElement.requestFullscreen({navigationUI:'hide'})}catch(e){}try{await screen.orientation.lock('landscape')}catch(e){}
+  try{st.wl=await navigator.wakeLock.request('screen')}catch(e){}connect()}
+function home(){st.want=false;try{st.conn&&st.conn.close()}catch(e){}st.conn=null;st.g=st.b=0;document.body.classList.remove('drv');$('#drive').style.display='none';$('#home').style.display='flex';
+  try{document.exitFullscreen&&document.fullscreenElement&&document.exitFullscreen()}catch(e){}try{st.wl&&st.wl.release()}catch(e){}}
+$('#go').onclick=start;$('#ex').onclick=home;
+document.addEventListener('visibilitychange',async()=>{if(!document.hidden&&st.want){try{st.wl=await navigator.wakeLock.request('screen')}catch(e){}if(!st.conn||!st.conn.open)connect()}});
+// ---- impostazioni del volante
+function optR(){document.querySelectorAll('#opt .seg').forEach(s=>s.querySelectorAll('button').forEach(b=>b.classList.toggle('on',String(O[s.dataset.o])===b.dataset.v)))}
+document.querySelectorAll('#opt .seg button').forEach(b=>b.onclick=()=>{O[b.parentNode.dataset.o]=+b.dataset.v;LS('gd_opt',JSON.stringify(O));optR();pedSide()});
+$('#opb').onclick=()=>{optR();$('#opt').style.display='grid'};$('#opx').onclick=()=>{$('#opt').style.display='none'};
+if(q&&cod.value.length===6)setTimeout(()=>$('#go').focus(),100);
+</script></body></html>
