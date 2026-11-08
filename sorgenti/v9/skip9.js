@@ -31,7 +31,7 @@ function sk9Open(){if($('sk9')||!S)return;const e=document.createElement('div');
 #sk9 .cv9{max-height:240px;overflow:auto;display:flex;flex-direction:column;gap:6px;text-align:left}#sk9 .cv9 div{padding:8px 11px;border-radius:14px;max-width:85%;white-space:pre-wrap;word-break:break-word;font-size:15px}#sk9 .cv9 .io{align-self:flex-end;background:#0f3a24}#sk9 .cv9 .lui{align-self:flex-start;background:#1b2a22;border:1px solid var(--neon,#3fd98a)}#sk9 .cv9 b{display:block;font-size:12px;color:var(--neon,#3fd98a)}
 #sk9 .go{background:var(--neon,#3fd98a);color:#021008}`;document.head.appendChild(st)}
 // appena nasci (una volta per vita)
-{const _sg=startGame;startGame=function(){const r=_sg.apply(this,arguments);try{if(S&&S.age<1&&!S.sk9){S.sk9=1;setTimeout(()=>{try{if(S&&S.age<1&&!ui.result)sk9Open()}catch(e){}},1800)}}catch(e){}return r}}
+{const _sg=startGame;startGame=function(){const r=_sg.apply(this,arguments);try{if(S&&S.age<1&&!S.sk9){S.sk9=1;const go=n=>{try{if(!S||S.age>=1)return;if(ui.result||$('nasc9')||$('acc9w')||$('nov9')){if(n<200)setTimeout(()=>go(n+1),1200);return}sk9Open()}catch(e){}};setTimeout(()=>go(0),1800)}}catch(e){}return r}}
 // nelle Impostazioni
 {const _pr=phRender;phRender=function(){const r=_pr.apply(this,arguments);try{if(PH9.app==='set'){const sc=document.querySelector('#ph9 .scr');if(sc&&!$('sk9b')){const b=document.createElement('button');b.id='sk9b';b.className='li9';
   b.innerHTML='<span class="av9">⏩</span><span class="tx"><b>Salta i primi 5 anni</b><small>Funzione speciale · tocca per saperne di più</small></span>';b.onclick=ev=>{ev.stopPropagation();sk9Open()};sc.insertBefore(b,sc.firstChild)}}}catch(e){}return r}}

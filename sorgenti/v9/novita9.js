@@ -1,17 +1,15 @@
 /* ================= v9: le novità dell'aggiornamento del mese ================= */
-const NOV9={k:'2026-11c',t:'Altre novità di novembre',l:[
-  ['📲','Installa l\'app','Il gioco si può installare come un\'app: trovi «Installa l\'app» nella pausa e in fondo alle Impostazioni.'],
-  ['📛','Nomi tutti diversi','Ogni account ha un nome solo suo: se il nome c\'è già, il gioco te ne propone uno simile.'],
-  ['⏸️','Account nella pausa','Nella pausa puoi cambiare account, aggiungerne uno o uscire.'],
-  ['🏍️','Moto sulla strada','Moto, scooter, quad, trattori, furgoni, camion e autobus ora si guidano sulla strada, come la macchina. In curva la moto piega!'],
-  ['🛣️','Strada ad anello','Le strade non finiscono più negli alberi: arrivano tutte a una grande strada con quattro curvoni che gira intorno alla città.'],
-  ['🚕','Lavoro da tassista','Con la patente B ti puoi far assumere come tassista: ti danno il taxi giallo e ogni corsa ti paga.'],
-  ['👶','Nascita più bella','Scegli carattere e stagione, poi guardi la scena della tua nascita.'],
-  ['👤','Il tuo account','Entra con Google o con l\'email: la partita si salva online e la ritrovi su ogni computer e telefono.'],
-  ['💻','Computer o telefono','Su computer vedi soldi in tasca e in banca accanto al tuo nome.'],
-  ['🏙️','Città più grande','Viali con alberi, palazzi con più dettagli, ville, grattacieli e piazze più larghe.'],
-  ['🚦','Strade vere','Semafori, rotonde, STOP, frecce, incidenti e luci della macchina.'],
-  ['🎨','11 colori','Nel telefono, in Impostazioni, scegli il colore che ti piace di più.']]};
+const NOV9={k:'2026-11d',t:'Novità della settimana',l:[
+  ['📦','Nuove missioni','Ora anche la Dottoressa Neri, la Signora Anna in biblioteca, Davide al cinema e i commessi ti danno consegne a tempo: chiedi «hai una missione?»'],
+  ['📱','Il telefono come volante','Collega il telefono al gioco (🎮 Impostazioni guida) e guida girando il volante sullo schermo.'],
+  ['🖱️','Guida col mouse','Sul computer: tasto destro accelera, tasto sinistro rallenta, muovi il mouse per girare.'],
+  ['💬','Chat più intelligente','I personaggi rispondono a tantissime domande: animali, spazio, storia, cibo e anche su di loro.'],
+  ['✉️','Scrivici','Nelle Impostazioni puoi mandare domande e idee a chi ha fatto il gioco, e ricevere la risposta.'],
+  ['⏩','Salta i primi 5 anni','Una funzione speciale per partire subito da 5 anni: la trovi appena nasci e nelle Impostazioni.'],
+  ['⚙️','Impostazioni sempre','Le Impostazioni sono nella pausa anche da piccolo: puoi scegliere subito i colori che ti piacciono.'],
+  ['🏍️','Moto sulla strada','Moto, scooter, quad, trattori, furgoni, camion e autobus si guidano sulla strada, come la macchina.'],
+  ['🛣️','Strada ad anello','Una grande strada con quattro curvoni gira intorno alla città.'],
+  ['🚕','Lavoro da tassista','Con la patente B ti puoi far assumere come tassista: ogni corsa ti paga.']]};
 function nov9Html(){return `<div class="nv9l">${NOV9.l.map(([i,t,d])=>`<div><i>${i}</i><span><b>${t}</b><small>${d}</small></span></div>`).join('')}</div>`}
 {const st=document.createElement('style');st.id='nov9s';st.textContent=`
 #nov9{position:fixed;inset:0;z-index:59;display:grid;place-items:center;background:rgba(2,6,12,.7);backdrop-filter:blur(5px);padding:16px}

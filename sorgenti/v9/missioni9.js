@@ -1,11 +1,13 @@
 /* ================= v9: missioni a tempo come in GTA (consegne): chiedi a Totò, Gino, Beppe o Rosa «hai una missione?» ================= */
 const MX9={on:false};
 const MX9_K={pizzaiolo:{ic:'🍕',what:'la pizza',fail:'la pizza si è raffreddata!',by:'Totò'},gelataio:{ic:'🍦',what:'il gelato',fail:'il gelato si è sciolto!',by:'Gino'},
-  edicolante:{ic:'📰',what:'il giornale',fail:'il cliente è uscito di casa!',by:'Beppe'},cassiera:{ic:'🛒',what:'la spesa',fail:'il cliente ha dovuto uscire!',by:'Rosa'}};
+  edicolante:{ic:'📰',what:'il giornale',fail:'il cliente è uscito di casa!',by:'Beppe'},cassiera:{ic:'🛒',what:'la spesa',fail:'il cliente ha dovuto uscire!',by:'Rosa'},
+  dottoressa:{ic:'💊',what:'le medicine',fail:'il paziente ha aspettato troppo!',by:'la Dottoressa Neri'},bibliotecaria:{ic:'📚',what:'il libro prenotato',fail:'il lettore è andato via!',by:'la Signora Anna'},
+  commessa:{ic:'🎁',what:'il pacco regalo',fail:'la festa è già cominciata!',by:'il negozio'},cassiere:{ic:'🍿',what:'i popcorn',fail:'il film è già finito!',by:'Davide'}};
 function mxStart(n){const K=MX9_K[n.role];if(!K)return null;if(MX9.on)return {r:`Prima finisci la consegna che stai facendo! ${MX9.ic} ⏱️`};if(S.age<7)return {r:'Sei ancora un po\' piccol'+o()+' per le consegne. Torna quando sarai più grande! 😊'};
   const from=destXY(n.scene)||[Math.floor(S.pos.x),Math.floor(S.pos.y)],L=BUILD.filter(b=>!['casa','casamia',n.scene].includes(b.id)&&!/^casa\d/.test(b.id)).map(b=>[b,destXY(b.id)]).filter(([b,d])=>d&&Math.hypot(d[0]-from[0],d[1]-from[1])>14&&Math.hypot(d[0]-from[0],d[1]-from[1])<42);
   if(!L.length)return null;const [b,d]=L[Math.floor(Math.random()*L.length)],dist=Math.abs(d[0]-from[0])+Math.abs(d[1]-from[1]),max=Math.round(25+dist*1.15),pay=Math.round(20+dist*1.2);
-  Object.assign(MX9,{on:true,ic:K.ic,K,to:b.id,name:b.ic+' '+b.n,goal:d,t:0,max,pay,warn:0});
+  Object.assign(MX9,{on:true,ic:K.ic,K,by:n.name,to:b.id,name:b.ic+' '+b.n,goal:d,t:0,max,pay,warn:0});
   setTimeout(()=>{try{closeChat()}catch(e){}toast(`${K.ic} Missione! Porta ${K.what} a ${b.ic} ${b.n} in ${max} secondi. Segui la strada viola sulla mappa! ⏱️`)},1400);
   return {r:`Grazie! Porta ${K.what} a ${b.ic} ${b.n}, presto presto! Hai ${max} secondi. ${K.ic}⏱️`}}
 function mxText(){const s=Math.max(0,Math.ceil(MX9.max-MX9.t));return `${MX9.ic} Porta ${MX9.K.what} a ${MX9.name} · ⏱️ ${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`}
@@ -13,7 +15,7 @@ function mxTick(dt){if(!MX9.on||!S||!S.alive)return;if(ui.mg||isBusy())return;MX
   const d=MX9.goal,arr=S.scene===MX9.to||(S.scene==='citta'&&Math.hypot(d[0]+.5-S.pos.x,d[1]+.5-S.pos.y)<1.7);
   if(arr){MX9.on=false;money(MX9.pay);add('fel',4);S.mx9=(S.mx9||0)+1;save();updateHud();tipT=0;if(typeof gtaPassed==='function')gtaPassed('MISSIONE COMPIUTA!',`Consegna fatta in tempo! +${MX9.pay} € ${MX9.ic}`);else toast(`✅ Consegna fatta! +${MX9.pay} €`);return}
   if(!MX9.warn&&MX9.max-MX9.t<10){MX9.warn=1;toast('⏰ Mancano 10 secondi! Corri!')}
-  if(MX9.t>=MX9.max){MX9.on=false;tipT=0;toast(`⏰ Tempo scaduto: ${MX9.K.fail} Torna da ${MX9.K.by} e riprova: «hai una missione?»`)}}
+  if(MX9.t>=MX9.max){MX9.on=false;tipT=0;toast(`⏰ Tempo scaduto: ${MX9.K.fail} Torna da ${MX9.by||MX9.K.by} e riprova: «hai una missione?»`)}}
 {const _s=step;step=function(dt){const r=_s(dt);try{mxTick(dt)}catch(e){}return r}}
 {const _h=hintText;hintText=function(){return MX9.on?mxText():_h.apply(this,arguments)}}
 // la strada viola e la colonna gialla portano alla consegna
