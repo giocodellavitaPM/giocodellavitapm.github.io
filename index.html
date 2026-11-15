@@ -7540,7 +7540,7 @@ function mxStart(n){const K=MX9_K[n.role];if(!K)return null;if(MX9.on)return {r:
 function mxText(){const s=Math.max(0,Math.ceil(MX9.max-MX9.t));return `${MX9.ic} Porta ${MX9.K.what} a ${MX9.name} · ⏱️ ${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`}
 function mxTick(dt){if(!MX9.on||!S||!S.alive)return;if(ui.mg||isBusy())return;MX9.t+=dt;const tip=$('tip');if(tip&&tip.textContent!==mxText())tip.textContent=mxText();
   const d=MX9.goal,arr=S.scene===MX9.to||(S.scene==='citta'&&Math.hypot(d[0]+.5-S.pos.x,d[1]+.5-S.pos.y)<1.7);
-  if(arr){MX9.on=false;money(MX9.pay);add('fel',4);S.mx9=(S.mx9||0)+1;save();updateHud();tipT=0;if(typeof gtaPassed==='function')gtaPassed('MISSIONE COMPIUTA!',`Consegna fatta in tempo! +${MX9.pay} € ${MX9.ic}`);else toast(`✅ Consegna fatta! +${MX9.pay} €`);return}
+  if(arr){MX9.on=false;money(MX9.pay);add('fel',4);S.mx9=(S.mx9||0)+1;save();updateHud();tipT=0;if(typeof gtaPassed==='function')gtaPassed('MISSIONE COMPIUTA!',`Consegna fatta in tempo! +${MX9.pay} € ${MX9.ic}`);else toast(`✅ Consegna fatta! +${MX9.pay} €`);setTimeout(()=>{try{mxMedal()}catch(e){}},3200);return}
   if(!MX9.warn&&MX9.max-MX9.t<10){MX9.warn=1;toast('⏰ Mancano 10 secondi! Corri!')}
   if(MX9.t>=MX9.max){MX9.on=false;tipT=0;toast(`⏰ Tempo scaduto: ${MX9.K.fail} Torna da ${MX9.by||MX9.K.by} e riprova: «hai una missione?»`)}}
 {const _s=step;step=function(dt){const r=_s(dt);try{mxTick(dt)}catch(e){}return r}}
@@ -7561,6 +7561,7 @@ function mxTick(dt){if(!MX9.on||!S||!S.alive)return;if(ui.mg||isBusy())return;MX
   c.fillStyle='#2f2c29';c.fillRect(X-1.5,Y-34,3,36);for(let i=0;i<3;i++)for(let j=0;j<4;j++){c.fillStyle=(i+j)%2?'#ffffff':'#1f1f22';c.fillRect(X+1.5+j*5,Y-34+i*5,5,5)}
   const R=GPS9.route,tg=R&&R.length>3?R[3]:g,a=Math.atan2((tg[1]+.5)*T-S.pos.y*T,(tg[0]+.5)*T-S.pos.x*T);if(Math.hypot(X-S.pos.x*T,Y-S.pos.y*T)<70)return;
   c.save();c.translate(S.pos.x*T+Math.cos(a)*52,S.pos.y*T+Math.sin(a)*52);c.rotate(a);c.fillStyle='rgba(196,92,255,.95)';c.strokeStyle='#fff';c.lineWidth=2;c.beginPath();c.moveTo(13,0);c.lineTo(-7,-9);c.lineTo(-2,0);c.lineTo(-7,9);c.closePath();c.fill();c.stroke();c.restore()}catch(e){}}}
+
 /* ================= v9: la carrozzeria come in GTA (porti la macchina presa all'officina: colore nuovo e la polizia non ti riconosce più) + il tachimetro ================= */
 const SP9={zone:null,busy:0,el:null,sp:null,kmh:0};
 const SP9_COL=['#e63946','#f4a261','#2a9d8f','#ffd23a','#7b2cbf','#f1f3f5','#1d3557','#3a86ff','#ff006e','#8ac926','#222831','#ff7f11'];
@@ -9028,7 +9029,8 @@ function cl9Apply(d,u){try{if(!d)return;OL9.fix=!!d.nomeFisso;if(!d.modifica||!d
 setInterval(()=>{try{const u=OL9.user;if(!u||!OL9.db){if(OL9.wu){OL9.wu();OL9.wu=null;OL9.wuid=null}return}if(OL9.wuid===u.uid)return;if(OL9.wu)OL9.wu();OL9.wuid=u.uid;
   OL9.wu=OL9.db.collection('utenti').doc(u.uid).onSnapshot(g=>cl9Apply(g.exists?g.data():null,u),()=>{})}catch(e){}},3000);
 /* ================= v9: le novità dell'aggiornamento del mese ================= */
-const NOV9={k:'2026-11d',t:'Novità della settimana',l:[
+const NOV9={k:'2026-11e',t:'Novità della settimana',l:[
+  ['🏅','Medaglie delle consegne','Più consegne fai in tempo, più medaglie vinci: bronzo, argento, oro, diamante e la corona! Ogni medaglia ti regala dei soldi. Le trovi nel telefono, app «Medaglie».'],
   ['📦','Nuove missioni','Ora anche la Dottoressa Neri, la Signora Anna in biblioteca, Davide al cinema e i commessi ti danno consegne a tempo: chiedi «hai una missione?»'],
   ['📱','Il telefono come volante','Collega il telefono al gioco (🎮 Impostazioni guida) e guida girando il volante sullo schermo.'],
   ['🖱️','Guida col mouse','Sul computer: tasto destro accelera, tasto sinistro rallenta, muovi il mouse per girare.'],
@@ -10070,6 +10072,18 @@ async function gd9Qr(box,link){try{if(typeof qrcode==='undefined')await gd9Lib([
 #gd9 .g9q{display:flex;flex-direction:column;align-items:center;gap:4px}#gd9 .g9q svg{width:170px;height:170px;background:#fff;border-radius:10px}#gd9 .g9q small{word-break:break-all;text-align:center}
 #gd9 .g9r{display:flex;gap:6px;flex-wrap:wrap}#gd9 .g9r button{flex:1}#gd9 button{border-radius:14px;padding:11px;font:inherit;font-weight:800;cursor:pointer;border:1.5px solid var(--neon,#3fd98a);background:transparent;color:#eafff2}
 #gd9 button.go,#gd9 button.on{background:var(--neon,#3fd98a);color:#021008}#gd9 .g9ok{color:var(--neon,#3fd98a);font-weight:800;margin:0;text-align:center}#gd9 .g9w{color:#ffd166;font-weight:800;margin:0;text-align:center}#gd9 .g9e{color:#ff7b86;font-weight:800;margin:0;text-align:center}`;document.head.appendChild(st)}
+/* ================= v9: medaglie delle consegne (missioni9.js) e app «Medaglie» nel telefono ================= */
+// medaglie del fattorino: più consegne fai, più medaglie vinci (con un premio in soldi)
+const MXM9=[[5,'🥉','Bronzo',50],[15,'🥈','Argento',150],[30,'🥇','Oro',300],[50,'💎','Diamante',500],[100,'👑','Re delle consegne',1000]];
+function mxMedal(){if(!S)return;const n=S.mx9||0;S.mxM9=S.mxM9||0;const m=MXM9.filter(x=>n>=x[0]);if(m.length<=S.mxM9)return;const x=m[m.length-1];S.mxM9=m.length;money(x[3]);add('fel',6);save();updateHud();
+  if(typeof gtaPassed==='function')gtaPassed(`MEDAGLIA ${x[2].toUpperCase()}! ${x[1]}`,`${n} consegne fatte! Premio: +${x[3]} €`);else toast(`${x[1]} Medaglia ${x[2]}! ${n} consegne. +${x[3]} €`)}
+PHX9.med9={t:'🏅 Medaglie',h:()=>{const n=(S&&S.mx9)||0,nx=MXM9.find(x=>n<x[0]);
+  return `<div class="scr"><p style="margin:0 0 10px;color:var(--soft)">Consegne fatte in tempo: <b>${n}</b>. Chiedi «hai una missione?» a Totò, Gino, Beppe, Rosa, Lucia, Marta, Giacomo, Davide, alla Dottoressa Neri o alla Signora Anna.</p>
+  <div style="display:grid;gap:8px">${MXM9.map(([k,i,t,p])=>{const ok=n>=k,pc=Math.min(100,Math.round(n/k*100));return `<div style="display:flex;gap:10px;align-items:center;padding:9px 11px;border-radius:14px;background:${ok?'rgba(255,200,60,.16)':'rgba(127,127,127,.08)'}">
+  <span style="font-size:30px;${ok?'':'filter:grayscale(1);opacity:.45'}">${i}</span><span style="flex:1"><b>${t}</b> · ${k} consegne<br><small style="color:var(--soft)">${ok?'✅ Vinta! Premio '+p+' €':'Premio '+p+' € · '+n+'/'+k}</small>
+  <span style="display:block;height:6px;border-radius:4px;background:rgba(127,127,127,.25);margin-top:4px"><span style="display:block;height:100%;width:${pc}%;border-radius:4px;background:${ok?'#f2b632':'#3fd98a'}"></span></span></span></div>`}).join('')}</div>
+  ${nx?`<p style="margin:12px 0 0;text-align:center;font-weight:700">Prossima medaglia: ${nx[1]} ${nx[2]} tra ${nx[0]-n} consegne!</p>`:'<p style="margin:12px 0 0;text-align:center;font-weight:700">👑 Hai vinto tutte le medaglie!</p>'}</div>`}};
+{const _a=phApps;phApps=function(){const L=_a.apply(this,arguments),i=L.findIndex(x=>x[0]==='set');L.splice(i<0?L.length:i,0,['med9','🏅','Medaglie']);return L}}
 function drawPalazzo(a){
   const X=a.x*T,Y=a.y*T,Wd=a.w*T,Hd=a.h*T,c=cx;
   c.fillStyle='rgba(0,0,0,.2)';c.beginPath();c.moveTo(X+Wd,Y+6);c.lineTo(X+Wd+14,Y+18);c.lineTo(X+Wd+14,Y+Hd+8);c.lineTo(X+10,Y+Hd+8);c.lineTo(X,Y+Hd);c.closePath();c.fill();

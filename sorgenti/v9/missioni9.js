@@ -13,7 +13,7 @@ function mxStart(n){const K=MX9_K[n.role];if(!K)return null;if(MX9.on)return {r:
 function mxText(){const s=Math.max(0,Math.ceil(MX9.max-MX9.t));return `${MX9.ic} Porta ${MX9.K.what} a ${MX9.name} · ⏱️ ${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`}
 function mxTick(dt){if(!MX9.on||!S||!S.alive)return;if(ui.mg||isBusy())return;MX9.t+=dt;const tip=$('tip');if(tip&&tip.textContent!==mxText())tip.textContent=mxText();
   const d=MX9.goal,arr=S.scene===MX9.to||(S.scene==='citta'&&Math.hypot(d[0]+.5-S.pos.x,d[1]+.5-S.pos.y)<1.7);
-  if(arr){MX9.on=false;money(MX9.pay);add('fel',4);S.mx9=(S.mx9||0)+1;save();updateHud();tipT=0;if(typeof gtaPassed==='function')gtaPassed('MISSIONE COMPIUTA!',`Consegna fatta in tempo! +${MX9.pay} € ${MX9.ic}`);else toast(`✅ Consegna fatta! +${MX9.pay} €`);return}
+  if(arr){MX9.on=false;money(MX9.pay);add('fel',4);S.mx9=(S.mx9||0)+1;save();updateHud();tipT=0;if(typeof gtaPassed==='function')gtaPassed('MISSIONE COMPIUTA!',`Consegna fatta in tempo! +${MX9.pay} € ${MX9.ic}`);else toast(`✅ Consegna fatta! +${MX9.pay} €`);setTimeout(()=>{try{mxMedal()}catch(e){}},3200);return}
   if(!MX9.warn&&MX9.max-MX9.t<10){MX9.warn=1;toast('⏰ Mancano 10 secondi! Corri!')}
   if(MX9.t>=MX9.max){MX9.on=false;tipT=0;toast(`⏰ Tempo scaduto: ${MX9.K.fail} Torna da ${MX9.by||MX9.K.by} e riprova: «hai una missione?»`)}}
 {const _s=step;step=function(dt){const r=_s(dt);try{mxTick(dt)}catch(e){}return r}}
@@ -34,3 +34,4 @@ function mxTick(dt){if(!MX9.on||!S||!S.alive)return;if(ui.mg||isBusy())return;MX
   c.fillStyle='#2f2c29';c.fillRect(X-1.5,Y-34,3,36);for(let i=0;i<3;i++)for(let j=0;j<4;j++){c.fillStyle=(i+j)%2?'#ffffff':'#1f1f22';c.fillRect(X+1.5+j*5,Y-34+i*5,5,5)}
   const R=GPS9.route,tg=R&&R.length>3?R[3]:g,a=Math.atan2((tg[1]+.5)*T-S.pos.y*T,(tg[0]+.5)*T-S.pos.x*T);if(Math.hypot(X-S.pos.x*T,Y-S.pos.y*T)<70)return;
   c.save();c.translate(S.pos.x*T+Math.cos(a)*52,S.pos.y*T+Math.sin(a)*52);c.rotate(a);c.fillStyle='rgba(196,92,255,.95)';c.strokeStyle='#fff';c.lineWidth=2;c.beginPath();c.moveTo(13,0);c.lineTo(-7,-9);c.lineTo(-2,0);c.lineTo(-7,9);c.closePath();c.fill();c.stroke();c.restore()}catch(e){}}}
+
