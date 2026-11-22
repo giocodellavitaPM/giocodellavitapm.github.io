@@ -1,5 +1,6 @@
 /* ================= v9: le novità dell'aggiornamento del mese ================= */
-const NOV9={k:'2026-11e',t:'Novità della settimana',l:[
+const NOV9={k:'2026-11f',t:'Novità della settimana',l:[
+  ['🎯','Freccette','Nuovo gioco nella Sala giochi: tira le freccette quando il mirino è sul centro rosso. Fai centro e vinci 50 punti!'],
   ['🏅','Medaglie delle consegne','Più consegne fai in tempo, più medaglie vinci: bronzo, argento, oro, diamante e la corona! Ogni medaglia ti regala dei soldi. Le trovi nel telefono, app «Medaglie».'],
   ['📦','Nuove missioni','Ora anche la Dottoressa Neri, la Signora Anna in biblioteca, Davide al cinema e i commessi ti danno consegne a tempo: chiedi «hai una missione?»'],
   ['📱','Il telefono come volante','Collega il telefono al gioco (🎮 Impostazioni guida) e guida girando il volante sullo schermo.'],
